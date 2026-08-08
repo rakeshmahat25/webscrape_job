@@ -11,9 +11,9 @@ class Company(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
 
-    website = models.CharField(max_length=255, blank=True)
+    company_name = models.CharField(max_length=255, blank=True)
 
-    career_url = models.CharField(max_length=255, blank=True)
+    website = models.CharField(max_length=255, blank=True)
 
     is_active = models.BooleanField(default=True)
 

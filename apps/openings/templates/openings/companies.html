@@ -1,0 +1,72 @@
+{% extends "openings/base.html" %}
+{% load pagination_tags %}
+{% block title %}Companies — Job Monitor{% endblock %}
+
+{% block content %}
+  <h1 style="font-size:20px; margin:0 0 16px;">Companies <span class="count">{{ total_companies }}</span></h1>
+
+  <div class="card">
+    <h2>All Companies <span class="count">{{ total_companies }}</span></h2>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Website</th>
+          <th>Career URL</th>
+          <th>Active openings</th>
+          <th>Last scraped</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for company in companies %}
+        <tr>
+          <td><a href="{% url 'company-detail' company.id %}">{{ company.name }}</a></td>
+          <td class="ellipsis">
+            {% if company.website %}<a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>{% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td class="ellipsis">
+            {% if company.career_url %}<a href="{{ company.career_url }}" target="_blank" rel="noopener">{{ company.career_url }}</a>{% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td>{{ company.openings_count }}</td>
+          <td class="muted">{% if company.last_scraped_at %}{{ company.last_scraped_at|date:"Y-m-d H:i" }}{% else %}never{% endif %}</td>
+          <td>
+            {% if company.last_error %}
+              <span class="badge failed">error</span>
+              <div class="error">{{ company.last_error }}</div>
+            {% elif company.last_scraped_at %}
+              <span class="badge success">ok</span>
+            {% else %}
+              <span class="muted">not scraped</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="empty">No companies imported. Run: python manage.py import_companies_csv companies.csv</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% if companies.has_other_pages %}
+    <div class="pagination">
+      <span class="muted">Showing {{ companies.start_index }}–{{ companies.end_index }} of {{ companies.paginator.count }}</span>
+      <div class="page-links">
+        {% if companies.has_previous %}
+          <a class="step" href="?{% pagination_query request 'page' companies.previous_page_number %}">«</a>
+        {% endif %}
+        {% for num in companies.paginator.page_range %}
+          {% if companies.number == num %}
+            <span class="current">{{ num }}</span>
+          {% elif num >= companies.number|add:-3 and num <= companies.number|add:3 %}
+            <a href="?{% pagination_query request 'page' num %}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if companies.has_next %}
+          <a class="step" href="?{% pagination_query request 'page' companies.next_page_number %}">»</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+{% endblock %}

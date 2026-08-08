@@ -1,11 +1,487 @@
-company_name,website,career_url
-Vianet Communications Pvt. Ltd.,https://www.vianet.com.np,
-Pathao Nepal Pvt. Ltd.,https://pathao.com.np,
-Foodmandu Pvt. Ltd.,https://foodmandu.com,
-Subisu Ltd.,https://www.subisu.com.np,
-Web Surfer,https://www.websurfer.com.np,
-InfoDevelopers Pvt. Ltd.,,
-Ekbana Solutions Pvt. Ltd.,,
-Splendour Group Pvt. Ltd.,,
-CloudFactory Nepal,,
-TechBucket Pvt Ltd,,
+sn,company_name,website,Status
+0,25 Hours,https://25hours.com.np/,CANDIDATE
+1,A.C.D Techs Pvt. Ltd.,https://acdtechs.com/,CANDIDATE
+2,AB Group Development Factory,https://abgroup.com.np/,CANDIDATE
+3,AB Group Pvt Ltd,https://abgroup.com.np/,CANDIDATE
+4,ACT Three Sixty Pvt. Ltd,https://act360.com.np/,CANDIDATE
+5,AI-Interf,https://aiinterf.com/,CANDIDATE
+6,ANS Creations Pvt. Ltd.,https://anscreations.com/,CANDIDATE
+7,ARC Design & Developer Pvt Ltd.,https://arcdesign.com.np/,CANDIDATE
+8,AUXFIN Development Nepal,https://auxfin.com/,CANDIDATE
+9,Aakar Nirman Sewa Pvt. Ltd.,https://aakarnirmansewa.com/,CANDIDATE
+10,Aakash Tech Pvt Ltd,https://aakashtech.com/,CANDIDATE
+11,Aakashi Japanese Language School Pvt. Ltd.,https://aakashi.com/,CANDIDATE
+12,Aarambha Printers Pvt. Ltd.,https://aarambhaprinters.com/,CANDIDATE
+13,Aava Global Solutions Pvt. Ltd.,https://aavaglobalsolutions.com/,CANDIDATE
+14,Aayulogic Pvt. Ltd,https://aayulogic.com/,VERIFIED
+15,Acme Smart Technology,https://acmesmart.com/,CANDIDATE
+16,AdMana Technology Pvt. Ltd.,https://admana.com/,CANDIDATE
+17,Addon Engineering Solution,https://addonengineering.com.np/,CANDIDATE
+18,Adopt Pvt. Ltd.,https://adopt.com.np/,CANDIDATE
+19,Aeronep Consulting Services,https://aeronep.com/,CANDIDATE
+20,Agram Infotech Pvt. Ltd.,https://agraminfotech.com/,CANDIDATE
+21,Akarshan Skin & Hair Clinic,https://akarshanclinic.com/,CANDIDATE
+22,Alpha Beta Theta Technologies Pvt. Ltd.,https://abttech.com/,CANDIDATE
+23,Alpine Outdoor Adventure Pvt. Ltd.,https://alpineoutdooradventure.com/,CANDIDATE
+24,Alti Pro Adventures Pvt. Ltd.,https://altipro.com/,CANDIDATE
+25,Amoeba Labs Pvt. Ltd.,https://amoebalabs.com/,CANDIDATE
+26,Amsoft Technologies,https://amsoft.com.np/,CANDIDATE
+27,Annofi Technologies Pvt. Ltd.,https://annofi.com/,CANDIDATE
+28,Aqore Software Pvt. Ltd.,https://aqore.com/,CANDIDATE
+29,Archiesoft Technology,https://archiesoft.com/,CANDIDATE
+30,Arete Viva Seo Pvt. Ltd.,https://areteviva.com/,CANDIDATE
+31,Asian International Education Pvt. Ltd.,https://asian.edu.np/,CANDIDATE
+32,Asterdio Inc.,https://asterdio.com/,VERIFIED
+33,Atriya Creations Pvt. Ltd.,https://atriyacreations.com/,CANDIDATE
+34,Avatar Tech Solutions Pvt. Ltd,https://avatartechsolutions.com/,CANDIDATE
+35,Avinya,https://avinya.com.np/,CANDIDATE
+36,B. I. Sage Pvt. Ltd.,https://bisage.com.np/,CANDIDATE
+37,BG Infotechs Pvt. Ltd,https://bginfotechs.com/,CANDIDATE
+38,BI Sage Pvt Ltd,https://bisage.com.np/,CANDIDATE
+39,BISage Pvt. Ltd.,https://bisage.com.np/,CANDIDATE
+40,BSAI Techno Sales,https://www.bsaitechnosales.com/,VERIFIED
+41,Bajra Technologies Pvt. Ltd.,https://bajratechnologies.com/,LIKELY
+42,Bar Code Nepal Pvt. Ltd.,https://barcodenepal.com/,CANDIDATE
+43,Basobaas Nepal Pvt. Ltd.,https://basobaas.com/,VERIFIED
+44,Beta Network Private Limited,https://betanetwork.com.np/,CANDIDATE
+45,Bhugol Park,https://bhugolpark.com/,CANDIDATE
+46,Bhumidev Furniture Bazar Pvt. Ltd.,https://bhumidevfurniture.com/,CANDIDATE
+47,Bibhuti Solution,https://www.bibhutisolutions.com/,VERIFIED
+48,Bidhee Pvt. Ltd.,https://bidhee.com/,LIKELY
+49,Biiyond Production Pvt. Ltd.,https://biiyond.com/,CANDIDATE
+50,Blackspring Pvt. Ltd.,https://blackspring.com/,CANDIDATE
+51,Blinglab Pvt. Ltd.,https://blinglab.com/,CANDIDATE
+52,Blueprint Technologies Pvt. Ltd.,https://blueprinttech.com.np/,CANDIDATE
+53,Brahmabyte Lab Pvt. Ltd,https://brahmabyte.com/,CANDIDATE
+54,Braindigit IT Solution,https://braindigit.com/,LIKELY
+55,BrandAd Inc.,https://brandadinc.com/,CANDIDATE
+56,Branding Bee,https://brandingbee.com/,CANDIDATE
+57,Branding Bee Pvt. Ltd.,https://brandingbee.com/,CANDIDATE
+58,Bright Kids Pvt. Ltd.,https://brightkids.com.np/,CANDIDATE
+59,Bull House Investment Pvt. Ltd.,https://bullhouseinvestment.com/,CANDIDATE
+60,Bus Sewa Travels and Tours,https://bussewa.com/,CANDIDATE
+61,Business Growth Company,https://businessgrowthcompany.com/,CANDIDATE
+62,CAS Total Solutions,https://castotalsolutions.com/,CANDIDATE
+63,CE Construction Pvt. Ltd.,https://ceconstruction.com.np/,CANDIDATE
+64,CG Corp Global,https://cgcorpglobal.com/,LIKELY
+65,COL ThinkSpace,https://colthinspace.com/,CANDIDATE
+66,CS InfoTech,https://csinfotech.com.np/,CANDIDATE
+67,CS Sewa Pvt. Ltd.,https://cssewa.com/,CANDIDATE
+68,Call Mobility Pvt. Ltd.,https://callmobility.com/,CANDIDATE
+69,Canopus Technology,https://canopustechnology.com/,CANDIDATE
+70,Centerpoint Networks Pvt. Ltd.,https://centerpointnetworks.com/,CANDIDATE
+71,Central Technology,https://centraltechnology.com.np/,CANDIDATE
+72,Channakya Software Pvt. Ltd.,https://channakyasoftware.com/,CANDIDATE
+73,Classic Tech Pvt. Ltd.,https://classictech.com.np/,LIKELY
+74,Click Point Innovations Pvt. Ltd.,https://www.clickpoint.com.np/,VERIFIED
+75,Clock B Business Technology,https://clockb.com/,CANDIDATE
+76,Cloud Link & Security Enterprises Pvt. Ltd.,https://cloudlink.com.np/,CANDIDATE
+77,Cloud Sewa,https://cloudsewa.com/,CANDIDATE
+78,CloudFactory Nepal,https://www.cloudfactory.com/,LIKELY
+79,Cloudtai Technologies,https://cloudtai.com/,CANDIDATE
+80,Cloudyfox Technology Pvt Ltd,https://cloudyfox.com/,CANDIDATE
+81,Coat Genix Pvt Ltd,https://coatgenix.com/,CANDIDATE
+82,Codavatar Tech Pvt. Ltd,https://codavatar.com/,CANDIDATE
+83,Code Logic Technologies Pvt. Ltd.,https://codelogic.com.np/,CANDIDATE
+84,Codeilo Solutions,https://codeilo.com/,VERIFIED
+85,Communicate Media,https://communicatemedia.com/,CANDIDATE
+86,Computalaya Network Pvt. Ltd.,https://computalaya.com/,CANDIDATE
+87,Computer Planet,https://computerplanet.com.np/,CANDIDATE
+88,Connect Kisan,https://connectkisan.com/,CANDIDATE
+89,Core Dreams Innovation Pvt. Ltd.,https://coredreams.com/,CANDIDATE
+90,Core Implus Technologies,https://coreimplus.com/,CANDIDATE
+91,Corewalkers Pvt. Ltd.,https://corewalkers.com/,CANDIDATE
+92,Corner Tech Pvt. Ltd.,https://cornertech.com.np/,CANDIDATE
+93,Cosmio Infotech Pvt. Ltd.,https://cosmioinfotech.com/,CANDIDATE
+94,Creabiz Studios,https://creabiz.com/,CANDIDATE
+95,Creative Link,https://creativelink.com.np/,CANDIDATE
+96,Creative Touch Fashion,NOT_FOUND,NO_SITE
+97,Creative Touch Garment Industry,NOT_FOUND,NO_SITE
+98,Creta Labs Pvt. Ltd,https://cretalabs.com/,CANDIDATE
+99,CrossOver Nepal,https://www.crossover.com/,LIKELY
+100,Crystal Diagnostic Pvt. Ltd,https://crystaldiagnostic.com/,CANDIDATE
+101,Cyber Inquest Private Limited,https://cyberinquest.com/,CANDIDATE
+102,Cybros Group LLC,https://cybrosgroup.com/,CANDIDATE
+103,D.N. Electronics,https://dnelectronics.com.np/,CANDIDATE
+104,DBRAND Solution Pvt Ltd,http://www.dbrandsolutions.com.np,VERIFIED
+105,Daaya Foundation,https://dayafoundation.org.np/,VERIFIED
+106,Data Hub Pvt. Ltd.,https://datahub.com.np/,CANDIDATE
+107,Debugsoft Pvt. Ltd.,https://debugsoft.com/,CANDIDATE
+108,Design X. Studio Private Limited,https://designxstudio.com/,CANDIDATE
+109,Design Xstudio Pvt. Ltd,https://designxstudio.com/,CANDIDATE
+110,Devloops Software Nepal Pvt. Ltd.,https://devloops.com/,CANDIDATE
+111,Diamond Knitland,https://diamondknitland.com/,CANDIDATE
+112,DigiHub Pvt Ltd,https://digihub.com.np/,CANDIDATE
+113,Digisoft Developers Pvt. Ltd.,https://digisoft.com.np/,CANDIDATE
+114,Digital Createch Solutions,https://digitalcreatech.com/,CANDIDATE
+115,Digital Raghu,https://digitalraghu.com/,CANDIDATE
+116,Digital Sangalo Pvt. Ltd.,https://digitalsangalo.com/,CANDIDATE
+117,Digital Terai,https://digitalterai.com/,CANDIDATE
+118,Digital Yatra I.T. Solutions Pvt. Ltd.,https://digitalyatra.com.np/,CANDIDATE
+119,Dimex Industries Pvt. Ltd.,https://dimexindustries.com/,CANDIDATE
+120,Diyalo Technologies Pvt. Ltd.,https://diyalotechnologies.com/,CANDIDATE
+121,Dolma Oriental Handicraft,https://dolmahandicraft.com/,CANDIDATE
+122,Doorsteps Nepal,https://doorstepsnepal.com/,CANDIDATE
+123,Dots and Dashes Technology Services Pvt. Ltd.,https://dotsanddashes.com/,CANDIDATE
+124,Dream Chaser,https://dreamchaser.com.np/,CANDIDATE
+125,Drishti Media,https://drishtimedia.com/,CANDIDATE
+126,Dropit Nepal Pvt. Ltd.,https://dropitnepal.com/,CANDIDATE
+127,E-Digital Nepal Pvt. Ltd.,https://edigitalnepal.com/,CANDIDATE
+128,E-Signature Pvt. Ltd.,https://e-signature.com.np/,CANDIDATE
+129,E-Zone International Pvt. Ltd.,https://e-zone.com.np/,CANDIDATE
+130,E.K. Solutions Pvt Ltd,https://eksolutions.com.np/,CANDIDATE
+131,EB Pearls,https://ebpearls.com/,VERIFIED
+132,ECS Media,https://ecsmedia.com.np/,CANDIDATE
+133,EEE Innovation Ghar Pvt. Ltd.,https://www.facebook.com/EEEinnovation/,NO_SITE (FB only)
+134,Eagle Rain Technologies Pvt. Ltd.,https://eaglerain.com/,VERIFIED
+135,Eagle Vision IT,https://eaglevisionit.com/,CANDIDATE
+136,East Horizon I- Tech Pvt. Ltd.,https://easthorizonitech.com/,CANDIDATE
+137,Easy Software Pvt Ltd,https://easysoftware.com.np/,CANDIDATE
+138,Easy Taxi Nepal,https://easytaxinepal.com/,CANDIDATE
+139,Eight Private Limited,https://eight.com.np/,CANDIDATE
+140,Ekbana Solutions Pvt. Ltd.,https://ekbana.com/,LIKELY
+141,Elite Technologies,https://elitetech.com.np/,CANDIDATE
+142,Elscript Technology,https://elscript.com/,CANDIDATE
+143,Enravel Nepal Pvt. Ltd.,https://enravel.com/,CANDIDATE
+144,Eprik Nepal Pvt. Ltd.,https://eprik.com/,CANDIDATE
+145,Erasoft Solution Pvt. Ltd.,https://erasoft.com.np/,CANDIDATE
+146,Eureka Prakriti Resources Centre,https://eurekaprakriti.org/,CANDIDATE
+147,Eureka Publication Pvt. Ltd.,https://eurekapublication.com/,CANDIDATE
+148,Everest Miracle Travel and Tours Pvt. Ltd.,https://everestmiracle.com/,CANDIDATE
+149,Everest Natural Herbs,https://everestnaturalherbs.com/,CANDIDATE
+150,EverestKart.com,https://everestkart.com/,CANDIDATE
+151,Extratech Education and Visa,https://extratech.com.np/,CANDIDATE
+152,F1 Soft International Pvt. Ltd.,https://f1soft.com/,VERIFIED
+153,FATDOG Agency,https://fatdogagency.com/,CANDIDATE
+154,FEAT International,https://featinternational.com/,CANDIDATE
+155,Facet Technology Pvt. Ltd,https://facettechnology.com/,CANDIDATE
+156,Farakpatra Media Pvt. Ltd.,https://farakpatra.com/,CANDIDATE
+157,Fetch International Pvt. Ltd.,https://fetchinternational.com.np/,CANDIDATE
+158,Fido IT Solution Pvt. Ltd.,https://fidoitsolution.com/,CANDIDATE
+159,FiveNix Inc.,https://fivenix.com/,CANDIDATE
+160,Flash Tech Pvt. Ltd.,https://flashtech.com.np/,CANDIDATE
+161,Flock Inn Hospitality Pvt. Ltd.,https://flockinn.com/,CANDIDATE
+162,Focus Creation Pvt Ltd,https://focuscreation.com/,CANDIDATE
+163,Foodmandu Pvt. Ltd.,https://foodmandu.com/,LIKELY
+164,Futuressoft Technology,https://futuressoft.com/,CANDIDATE
+165,G-Sports,https://gsports.com.np/,CANDIDATE
+166,GRS Solutions Pvt. Ltd.,https://grssolutions.com.np/,CANDIDATE
+167,Ganeshdeep Knitwear Pvt. Ltd.,https://ganeshdeepknitwear.com/,CANDIDATE
+168,Geeta Aviation,https://geetaaviation.com/,CANDIDATE
+169,General Technology,https://generaltechnology.com.np/,CANDIDATE
+170,Ghar Jamin,https://gharjamin.com/,CANDIDATE
+171,Giftmandu Nepal Pvt. Ltd.,https://giftmandu.com/,CANDIDATE
+172,Global Digitronix Pvt. Ltd.,https://globaldigitronix.com/,CANDIDATE
+173,Global Staffing Support,https://globalstaffingsupport.com/,CANDIDATE
+174,Global Tech Nepal Pvt. Ltd,https://globaltechnepal.com/,CANDIDATE
+175,Glow N Sign Nepal,https://glownsignnepal.com/,CANDIDATE
+176,GoScaleX Marketing Pvt. Ltd,https://goscalex.com/,CANDIDATE
+177,Goldenmud Creation Pvt Ltd,https://goldenmud.com/,CANDIDATE
+178,Goldmine Business Group,https://goldminebusinessgroup.com/,CANDIDATE
+179,Gorkha Athletics,https://gorkhaathletics.com/,CANDIDATE
+180,Grace International Education,https://graceinternational.com.np/,CANDIDATE
+181,Grafi Offshore Nepal,https://grafioffshore.com/,CANDIDATE
+182,Graphic Tune Pvt. Ltd.,https://graphictune.com/,CANDIDATE
+183,Green Cube Technologies Pvt. Ltd.,https://greencube.com.np/,CANDIDATE
+184,Green life Experience,https://greenlifeexperience.com/,CANDIDATE
+185,Gripas Marketing,https://gripasmarketing.com/,CANDIDATE
+186,Gurzu Inc.,https://gurzu.com/,LIKELY
+187,Hamro Technology Pvt. Ltd.,https://hamrotechnology.com/,CANDIDATE
+188,Harrington Nepal,https://harringtonnepal.com/,CANDIDATE
+189,Helmets Nepal,https://helmetsnepal.com/,CANDIDATE
+190,HiTech Solutions & Services Pvt. Ltd.,https://hitechsolutions.com.np/,CANDIDATE
+191,HiUp Solutions,https://hiupsolutions.com/,CANDIDATE
+192,Himalayan Techies,https://himalayantechies.com/,CANDIDATE
+193,Himalayan Treasures Limited,https://himalayantreasures.com/,CANDIDATE
+194,Hitachi Energy,https://hitachienergy.com/,VERIFIED
+195,Holiday Planner's Tours & travels Pvt. Ltd.,https://holidayplannersnepal.com/,CANDIDATE
+196,Home Craft Nepal Pvt. Ltd.,https://homecraftnepal.com/,CANDIDATE
+197,Horizon International,https://horizoninternational.com.np/,CANDIDATE
+198,Horizon Technology Pvt. Ltd.,https://horizontechnology.com.np/,CANDIDATE
+199,I-Tech Nepal,https://itechnepal.com.np/,CANDIDATE
+200,I.STEM LAB Pvt. Ltd.,https://istemlab.com/,CANDIDATE
+201,ICT Frame,https://ictframe.com/,VERIFIED
+202,ICT Voice,https://ictvoice.com/,CANDIDATE
+203,IESMAC Technologies Pvt. Ltd.,https://iesmac.com/,CANDIDATE
+204,IOXET Labs Pvt. Ltd.,https://ioxet.com/,VERIFIED
+205,IPA Study Abroad,https://ipastudyabroad.com/,CANDIDATE
+206,IT Gamut Enterprises,https://itgamut.com/,CANDIDATE
+207,IT Offer Pvt Ltd,https://itoffer.com.np/,CANDIDATE
+208,IT Revolution Pvt. Ltd.,https://itrevolution.com.np/,CANDIDATE
+209,IT Wise Nepal Pvt. Ltd.,https://itwisenepal.com/,CANDIDATE
+210,InDesign Media Pvt. Ltd.,https://indesignmedia.com.np/,CANDIDATE
+211,Incessant Rain Animation,https://incessantrain.com/,CANDIDATE
+212,Infinite Software Services,https://infinitesoftware.com.np/,CANDIDATE
+213,Infinity Digital Agency Pvt. Ltd.,https://infinitydigital.com/,CANDIDATE
+214,Info Gate Pvt. Ltd.,https://infogate.com.np/,CANDIDATE
+215,InfoDevelopers Pvt. Ltd.,https://infodevelopers.com.np/,LIKELY
+216,Information Care Pvt. Ltd.,https://infocarenepal.com/,VERIFIED
+217,Initiative Nepal Pvt. Ltd.,https://initiativenepal.org/,CANDIDATE
+218,Intellisoft Nepal,https://intellisoft.com.np/,CANDIDATE
+219,Intopros Technologies Pvt Ltd,https://intopros.com/,CANDIDATE
+220,IntroCept Nepal,https://introcept.com/,VERIFIED
+221,Inventors Academy,https://inventorsacademy.com.np/,CANDIDATE
+222,IronRim,https://ironrim.com/,CANDIDATE
+223,JSPER,https://www.jsper.com.au/,VERIFIED
+224,Janak Tech Pvt. Ltd.,https://janaktech.com/,CANDIDATE
+225,Jasmine Paints Pvt Ltd,https://jasminepaints.com.np/,CANDIDATE
+226,Jetsons Digital Pvt. Ltd,https://jetsonsdigital.com/,CANDIDATE
+227,Jyaasa Technologies Pvt. Ltd.,https://jyaasa.com/,LIKELY
+228,K & A Engineering Consulting,https://knepl.com/,CANDIDATE
+229,KTM Rush,https://ktmrush.com/,CANDIDATE
+230,Kagati Tech Pvt Ltd,https://kagatech.com/,CANDIDATE
+231,Kailaasa Advertising Pvt. Ltd.,https://kailaasa.com/,CANDIDATE
+232,Kala Building and Construction,https://kalabuilding.com/,CANDIDATE
+233,Katha Nepal,https://kathanepal.com/,CANDIDATE
+234,Kathford International College,https://kathford.edu.np/,VERIFIED
+235,Key Advertising,https://keyadvertising.com.np/,CANDIDATE
+236,Key Foods International Pvt. Ltd.,https://keyfoods.com/,CANDIDATE
+237,Khalti,https://khalti.com/,VERIFIED
+238,Kitab Yatra Pvt. Ltd.,https://kitabyatra.com/,VERIFIED
+239,Krizmatic Digital Solution Pvt. Ltd.,https://krizmatic.com/,CANDIDATE
+240,Kush Tech Nepal Pvt. Ltd.,https://kushtech.com/,CANDIDATE
+241,LalNepal,https://lalnepal.com/,CANDIDATE
+242,Laxmi Group,https://laxmigroup.com.np/,VERIFIED
+243,Lifestyle Apparels Pvt Ltd,https://lifestyleapparels.com/,CANDIDATE
+244,Living Eyes Media,https://livingeyesmedia.com/,CANDIDATE
+245,Living With ICT,https://livingwithict.com/,LIKELY
+246,Logiclync,https://logiclync.com/,CANDIDATE
+247,Login Soft Nepal,https://loginsoftnepal.com/,CANDIDATE
+248,Logo Fashion Industries Pvt. Ltd.,https://logofashion.com/,CANDIDATE
+249,Lopho Tech Pvt. Ltd.,https://lophotech.com/,CANDIDATE
+250,Luga Suga Traders,https://lugasuga.com/,CANDIDATE
+251,Lumino Technology,https://luminotechnology.com/,CANDIDATE
+252,M & R Solutions Pvt. Ltd.,https://mnrsolutions.com/,CANDIDATE
+253,M Bank Pvt Ltd,https://mbank.com.np/,CANDIDATE
+254,M.N Traders,https://mntraders.com.np/,CANDIDATE
+255,M.S. Engineering And Complete Solution Pvt. Ltd.,https://msengineering.com.np/,CANDIDATE
+256,MAW Enterprises Pvt. Ltd.,https://mawgroup.com/,VERIFIED
+257,MAYAHOLD Group,https://mayahold.com/,CANDIDATE
+258,MEDIFLOW Solution Pvt. Ltd.,https://mediflowsolution.com/,CANDIDATE
+259,MORU Digital Wallet,https://moru.com.np/,VERIFIED
+260,Makalu Software Pvt. Ltd.,https://makalusoftware.com/,CANDIDATE
+261,Makalu e-Traders,https://makaluetraders.com/,CANDIDATE
+262,Mandarix,https://mandarix.com/,CANDIDATE
+263,Mantra Ideas Pvt. Ltd.,https://mantraideas.com/,VERIFIED
+264,Marcom Advisory Pvt. Ltd.,https://marcomadvisory.com/,CANDIDATE
+265,Mark Minds Pvt. Ltd.,https://markminds.com/,CANDIDATE
+266,Masta Kala Crafts,https://mastakala.com/,CANDIDATE
+267,Max International,https://maxinternational.com.np/,CANDIDATE
+268,Media Journal Pvt. Ltd.,https://mediajournal.com.np/,CANDIDATE
+269,Mega Web Link Pvt. Ltd.,https://megaweblink.com/,CANDIDATE
+270,Megabyte Tech Pvt. Ltd.,https://megabytetech.com/,CANDIDATE
+271,Megatech Group Pvt. Ltd.,https://megatechgroup.com.np/,CANDIDATE
+272,Mercy Technology Pvt. Ltd.,https://mercytechnology.com/,CANDIDATE
+273,MiDas Technologies Pvt. Ltd.,https://midastech.com.np/,CANDIDATE
+274,Microtech Computers Pvt. Ltd.,https://microtech.com.np/,CANDIDATE
+275,Midas Innovations Pvt. Ltd.,https://midasinnovations.com/,CANDIDATE
+276,Migo Education and Visa Services,https://migoeducation.com/,CANDIDATE
+277,Miracle Education Services Pvt. Ltd.,https://miracleeducation.com/,CANDIDATE
+278,Mithila Tech And I.T. Solutions Pvt. Ltd.,https://mithilatech.com.np/,CANDIDATE
+279,Mobilemandu Gadgets and Accessories Pvt. Ltd.,https://mobilemandu.com/,CANDIDATE
+280,Mobility Freight Pvt. Ltd.,https://mobilityfreight.com/,CANDIDATE
+281,Moto World Nepal Pvt. Ltd.,https://motoworldnepal.com/,CANDIDATE
+282,Muktinath Krishi Company Ltd.,https://muktinathkrishi.com/,CANDIDATE
+283,Multination Media,https://multinationmedia.com/,CANDIDATE
+284,My Cabin Cafe & Workstation,https://mycabincafe.com/,CANDIDATE
+285,NAXA Pvt. Ltd.,https://naxa.com.np/,VERIFIED
+286,NBIT Pvt. Ltd,https://nbit.com.np/,CANDIDATE
+287,NEPS,https://neps.com.np/,CANDIDATE
+288,NETTV,https://nettv.com.np/,VERIFIED
+289,NITA Polyclinic & Diagnostic Center,https://nitapolyclinic.com/,CANDIDATE
+290,Nakshatra Advertizing Pvt. Ltd.,https://nakshatraadvertising.com/,CANDIDATE
+291,Namaste Digital Nepal Pvt. Ltd.,https://namastedigital.com.np/,CANDIDATE
+292,Nandi Solutions,https://nandisolutions.com/,CANDIDATE
+293,Nassec,https://nassec.com/,VERIFIED
+294,Naulo Koseli,https://naulokoseli.com/,CANDIDATE
+295,Navata Tech Pvt. Ltd.,https://navatatech.com/,CANDIDATE
+296,Navin Soch Printing Press,https://navinsoch.com/,CANDIDATE
+297,Neco Jobs Pvt. Ltd.,https://necojobs.com/,CANDIDATE
+298,Nepal Can group Pvt. Ltd.,https://www.nepalcangroup.com/,VERIFIED
+299,"Nepal Career Training Foundation (CTF, Nepal)",https://ctfnepal.org/,CANDIDATE
+300,Nepal Center for Engineering and Research Pvt. Ltd.,https://ncer.com.np/,CANDIDATE
+301,Nepal Clearing House Ltd.,https://nchl.com.np/,VERIFIED
+302,Nepal Creative Ventures Pvt. Ltd.,https://nepalcreativeventures.com/,CANDIDATE
+303,Nepal Digital Systems Pvt. Ltd.,https://nepaldigitalsystems.com/,CANDIDATE
+304,Nepal Herbs Industries Pvt. Ltd,https://nepalherbs.com/,CANDIDATE
+305,Nepal Infrastructure Bank Ltd.,https://nibl.com.np/,VERIFIED
+306,Nepal Paytime Pvt Ltd,https://paytime.com.np/,CANDIDATE
+307,Nepal Safety Centre Pvt. Ltd.,https://nepalsafetycentre.org/,CANDIDATE
+308,Nepal Tech Solutions,https://nepaltechsolutions.com/,CANDIDATE
+309,Neputer Tech Pvt. Ltd.,https://neputer.com/,CANDIDATE
+310,New Bajrayogini Traders,https://newbajrayogini.com/,CANDIDATE
+311,New Era International Pvt. Ltd.,https://neweraintl.com/,CANDIDATE
+312,Newlook Cosmetics,https://newlookcosmetics.com/,CANDIDATE
+313,Next Nepal Pvt. Ltd.,https://nextnepal.com/,CANDIDATE
+314,Nexus Incorporation Pvt. Ltd.,https://nexusincorporation.com/,CANDIDATE
+315,Nikhil Books and Desktop,https://nikhilbooks.com/,CANDIDATE
+316,Ninja Infosys Pvt. Ltd.,https://ninjainfosys.com/,CANDIDATE
+317,Niraksa Innovations,https://niraksa.com/,CANDIDATE
+318,Nova International Diagnostic,https://novadiagnostic.com/,CANDIDATE
+319,OM Networks Pvt. Ltd.,https://omnetworks.com.np/,CANDIDATE
+320,Ojas Technologies,https://ojastechnologies.com/,CANDIDATE
+321,Omega BPO Pvt. Ltd.,https://omegabpo.com/,CANDIDATE
+322,Omniblue Tech,https://omnibluetech.com/,CANDIDATE
+323,One Window International,https://onewindowinternational.com/,CANDIDATE
+324,OrderQ,https://orderq.com/,CANDIDATE
+325,Osho Tapoban International,https://oshotapoban.com/,CANDIDATE
+326,Oxford Print Solutions,https://oxfordprint.com/,CANDIDATE
+327,PSA Advance Home Technology Pvt. Ltd.,https://psahometech.com/,CANDIDATE
+328,Palm Mind,https://palmmind.com/,VERIFIED
+329,Pana Software Company Pvt. Ltd.,https://panasoftware.com/,CANDIDATE
+330,Paradise Destination Pvt. Ltd,https://paradisedestination.com/,CANDIDATE
+331,Paradise IT Solution Pvt. Ltd.,https://paradiseitsolution.com/,CANDIDATE
+332,Pashupati Marble Global Trade Pvt. Ltd.,https://pashupatimarble.com/,CANDIDATE
+333,Pathao Nepal Pvt. Ltd.,https://pathao.com/,LIKELY
+334,Peace Love and Art Community,https://placcommunity.org/,CANDIDATE
+335,Pedal Group Pvt. Ltd.,https://pedalgroup.com.np/,CANDIDATE
+336,Percoid IT Solutions,https://percoid.com/,CANDIDATE
+337,Perfect Active Solutions Pvt. Ltd.,https://perfectactive.com/,CANDIDATE
+338,Perfect Blends (Nepal) Pvt. Ltd.,https://perfectblendsnepal.com/,CANDIDATE
+339,Phoenix Solutions Pvt. Ltd.,https://phoenixsolutions.com.np/,CANDIDATE
+340,Pioneer Associate Pvt. Ltd.,https://pioneerassociate.com/,CANDIDATE
+341,Plex Bit Infosystems Pvt. Ltd.,https://plexbit.com/,CANDIDATE
+342,Potent Media Home Pvt. Ltd.,https://potentmedia.com/,CANDIDATE
+343,Prabhavana Information Technologies Pvt. Ltd.,https://prabhavana.com.np/,CANDIDATE
+344,Prime Holidays Travel and Tours,https://primeholidays.com/,CANDIDATE
+345,Primo Consulting Group,https://primoconsulting.com/,CANDIDATE
+346,Primo Group,https://primogroup.com.np/,CANDIDATE
+347,Print Pro Enterprises Pvt. Ltd.,https://printpro.com.np/,CANDIDATE
+348,Prisma Advertising,https://prismaadvertising.com/,CANDIDATE
+349,Professional Computer System Pvt. Ltd.,https://pcs.com.np/,CANDIDATE
+350,Profox Studio Pvt. Ltd.,https://profoxstudio.com/,CANDIDATE
+351,Progressive Technologies Pvt. Ltd.,https://progressivetech.com.np/,CANDIDATE
+352,Prologic Solutions Pvt. Ltd.,https://prologicsolutions.com.np/,CANDIDATE
+353,Proshore Nepal Pvt. Ltd,https://proshore.eu/,VERIFIED
+354,Quackfoot Pvt. Ltd.,https://quackfoot.com/,CANDIDATE
+355,RABS International Pvt. Ltd.,https://rabsinternational.com/,CANDIDATE
+356,RPA Nepal Pvt. Ltd.,https://rpanepal.com/,CANDIDATE
+357,Radha Nursing and Caregiver Academy,https://radhanursing.com/,CANDIDATE
+358,Radiant Infotech Nepal Pvt. Ltd.,https://radiantinfotech.com/,CANDIDATE
+359,Raindrop Inc.,https://raindropinc.com/,CANDIDATE
+360,Rapid Web Solutions Pvt. Ltd.,https://rapidwebsolutions.com/,CANDIDATE
+361,Rara Information Technology,https://rarainfo.com/,CANDIDATE
+362,Real Story Time,https://realstorytime.com/,CANDIDATE
+363,Red Circle Creative Solutions,https://redcircle.com.np/,CANDIDATE
+364,Redigify Idea Solution Pvt. Ltd,https://redigify.com/,CANDIDATE
+365,Revachi International Pvt.Ltd,https://revachi.com/,CANDIDATE
+366,Rever Hub Pvt Ltd,https://reverhub.com/,CANDIDATE
+367,Rewa Soft Pvt. Ltd,https://rewasoft.com/,CANDIDATE
+368,Riddhasoft Pvt. Ltd.,https://riddhasoft.com/,CANDIDATE
+369,Royal Kathmandu Himalaya Beverage Pvt Ltd,https://rkhb.com.np/,CANDIDATE
+370,S.D.K Group Pvt. Ltd.,https://sdkgroup.com.np/,CANDIDATE
+371,S.G. Design Nepal Pvt Ltd,https://sgdesign.com.np/,CANDIDATE
+372,SD media Pvt. Ltd.,https://sdmedia.com.np/,CANDIDATE
+373,SK Ventures Pvt. Ltd.,https://skventures.com.np/,CANDIDATE
+374,SM Tech Nepal,https://smtechnepal.com/,CANDIDATE
+375,SPS Fire and Safety,https://spsfiresafety.com/,CANDIDATE
+376,Safal International Multiservices Pvt. Ltd.,https://safalinternational.com/,CANDIDATE
+377,Sage Nepal,https://sagenepal.com/,CANDIDATE
+378,Saim College Nepal,https://saimcollege.edu.np/,VERIFIED
+379,Sakchha Technology Pvt. Ltd.,https://sakchha.com/,CANDIDATE
+380,Salyani Technologies,https://salyanitech.com/,CANDIDATE
+381,Sambhavya Group Pvt. Ltd.,https://sambhavyagroup.com/,CANDIDATE
+382,Sarvanam Software Pvt. Ltd.,https://sarvanam.com/,CANDIDATE
+383,Saturn Outsource Pvt Ltd.,https://saturnoutsource.com/,CANDIDATE
+384,Search Eyes Business Solutions,https://searcheyes.com/,CANDIDATE
+385,Searchable Design,https://searchabledesign.com/,CANDIDATE
+386,Searchable Design Pvt. Ltd.,https://searchabledesign.com/,CANDIDATE
+387,SeeLogic International Pvt. Ltd.,https://seelogic.com/,CANDIDATE
+388,Seshra Innovations Pvt. Ltd.,https://seshra.com/,CANDIDATE
+389,Seven Multi Trading Pvt. Ltd.,https://sevenmulti.com/,CANDIDATE
+390,Shikhar Organization Limited,https://shikharinsurance.com/,CANDIDATE
+391,Shivo Electronics and Manufacturing Co. Pvt. Ltd.,https://shivoelectronics.com/,CANDIDATE
+392,Shrestha Digital Print,https://shresthadigitalprint.com/,CANDIDATE
+393,Siddhartha Sunrise Industries Pvt. Ltd,https://siddharthasunrise.com/,CANDIDATE
+394,Silk Innovation Pvt. Ltd.,https://silkinnovation.com/,CANDIDATE
+395,Six Sigma Inc.,https://sixsigma.com/,CANDIDATE
+396,Sky World Travel Nepal Pvt. Ltd.,https://skyworldtravel.com.np/,CANDIDATE
+397,Slash Plus Pvt. Ltd,https://slashplus.com/,CANDIDATE
+398,Smark One Technology Pvt. Ltd.,https://smarkone.com/,CANDIDATE
+399,Smart Accounting,https://smartaccounting.com.np/,CANDIDATE
+400,Smart Pathshala,https://smartpathshala.com/,CANDIDATE
+401,Smart Tech Nepal Pvt. Ltd.,https://smarttechnepal.com/,CANDIDATE
+402,SmartSoft Network Pvt. Ltd.,https://smartsoftnetwork.com/,CANDIDATE
+403,Smartly Yours Pvt. Ltd,https://smartlyyours.com/,CANDIDATE
+404,Smtech Technology,https://smtech.com/,CANDIDATE
+405,Society FinTech,https://societyfintech.com/,CANDIDATE
+406,Softbenz Infosys Pvt. Ltd.,https://softbenz.com/,CANDIDATE
+407,Softech Foundation,https://softechfoundation.org/,CANDIDATE
+408,Softhover Pvt. Ltd,https://softhover.com/,CANDIDATE
+409,Softix Info Pvt. Ltd.,https://softixinfo.com/,CANDIDATE
+410,Softlab Inc. Pvt. Ltd.,https://softlabinc.com/,CANDIDATE
+411,Sofwena Pvt. Ltd.,https://sofwena.com/,VERIFIED
+412,Source Code Pvt. Ltd.,https://sourcecode.com.np/,CANDIDATE
+413,Sparrow SMS,https://sparrowsms.com/,VERIFIED
+414,Spinal Injury Sangh Nepal,https://spinalinjurysangh.org/,CANDIDATE
+415,Splendour Group Pvt. Ltd.,https://www.splendourgroup.org/,VERIFIED
+416,Star H.R. Agency Pvt. Ltd.,https://starhr.com/,CANDIDATE
+417,Studio 2.0,https://studio2.com.np/,CANDIDATE
+418,Subisu Ltd,https://subisu.com.np/,LIKELY
+419,Sumat Associates Pvt. Ltd.,https://sumatassociates.com/,CANDIDATE
+420,Sunmoon Media Pvt. Ltd.,https://sunmoonmedia.com/,CANDIDATE
+421,Suvidha Tech Pvt. Ltd,https://suvidhatech.com/,CANDIDATE
+422,Swayambhu Press,https://swayambhupress.com/,CANDIDATE
+423,Synergy Tech Software Pvt. Ltd,https://synergytech.com.np/,CANDIDATE
+424,TechBucket Pvt Ltd,https://techbucket.com.np/,CANDIDATE
+425,TechHaus Pvt. Ltd.,https://techhaus.dev/,VERIFIED
+426,Techdurbar Pvt. Ltd.,https://techdurbar.com/,CANDIDATE
+427,Technergy Global Pvt. Ltd.,https://technergyglobal.com/,CANDIDATE
+428,Technology Spot,https://technologyspot.com/,CANDIDATE
+429,Technorio,https://technorio.com/,VERIFIED
+430,Techspire Innovation Pvt. Ltd,https://techspireinnovation.com.np/,VERIFIED (careers: /career)
+431,TekGro Pvt Ltd,https://tekgro.com/,VERIFIED
+432,Tekkon Technologies,https://tekkon.com/,CANDIDATE
+433,The Aryan School of Engineering & Management,https://aryanschool.edu.np/,VERIFIED
+434,The Maker Crew,https://themakercrew.com/,CANDIDATE
+435,TheSquare,https://thesquare.com.np/,CANDIDATE
+436,TheSquare Design Communication Pvt. Ltd.,https://thesquaredesign.com/,CANDIDATE
+437,Theeta Production Pvt. Ltd.,https://theetaproduction.com/,CANDIDATE
+438,Theme Miles,https://thememiles.com/,CANDIDATE
+439,ThemeNepal Pvt Ltd,https://themenepal.com/,CANDIDATE
+440,Think Ideas & Solutions,https://thinkideas.com/,CANDIDATE
+441,Third Rock Adventures,https://thirdrockadventures.com/,VERIFIED
+442,Three Monks,https://threemonks.com.np/,CANDIDATE
+443,Torus Enterprise Solutions Pvt. Ltd.,https://torusenterprise.com/,CANDIDATE
+444,Travel Maker South Asia Pvt. Ltd.,https://travelmakersouthasia.com/,CANDIDATE
+445,Treeleaf Technologies Pvt. Ltd.,https://treeleaf.ai/,VERIFIED
+446,Trexmount Ventures Pvt. Ltd.,https://trexmount.com/,CANDIDATE
+447,US Sanchar Network Pvt Ltd,NOT_FOUND,NO_SITE (vacancies on broadwayinfosys.com/career/placement-partners)
+448,Ultra Group Nepal,https://ultragroupnepal.com/,CANDIDATE
+449,Ultra Home Pvt. Ltd.,https://ultrahome.com.np/,CANDIDATE
+450,Unitech,https://unitech.com.np/,CANDIDATE
+451,United Academy Group,https://unitedacademy.com.np/,VERIFIED
+452,Upasarga Technology Pvt. Ltd.,https://upasarga.com/,CANDIDATE
+453,Uranus Tech Nepal Pvt. Ltd.,https://uranustech.com/,CANDIDATE
+454,V-Chitra Advertising,https://vchitra.com/,CANDIDATE
+455,Vantage BIT Pvt. Ltd.,https://vantagebit.com/,CANDIDATE
+456,Veraison Creative Pvt. Ltd.,https://veraisoncreative.com/,CANDIDATE
+457,Verisk Nepal Pvt. Ltd.,https://verisknepal.com/,CANDIDATE
+458,Verscend Technologies Pvt. Ltd.,https://verscend.com/,CANDIDATE
+459,Vianet Communications Pvt. Ltd.,https://vianet.com.np/,LIKELY
+460,Vito Silicon Soft & IT Consultant,https://vitosilicon.com/,CANDIDATE
+461,Vizanation Consultancy Pvt. Ltd.,https://vizanation.com/,CANDIDATE
+462,Volaj Technology Pvt. Ltd.,https://volaj.com/,CANDIDATE
+463,Volcus Soft Pvt. Ltd.,https://volcussoft.com/,CANDIDATE
+464,VolgAI,https://volgai.com/,CANDIDATE
+465,Web Creation Nepal,https://webcreationnepal.com/,CANDIDATE
+466,Web Experts Nepal Pvt. Ltd.,https://webexpertsnepal.com/,CANDIDATE
+467,Web Host Nepal Pvt Ltd,https://webhostnepal.com/,CANDIDATE
+468,Web House Nepal,https://webhousenepal.com/,CANDIDATE
+469,Web Surfer,https://websurfer.com.np/,VERIFIED
+470,Web Tuned Studio,https://webtunedstudio.com/,CANDIDATE
+471,Webtech Nepal Pvt. Ltd.,https://webtechnepal.com/,CANDIDATE
+472,Wen Solutions Pvt. Ltd.,https://wensolutions.com/,VERIFIED
+473,Wi-Fi Nepal Pvt. Ltd.,https://wifinepal.com.np/,CANDIDATE
+474,Wifi Nepal Services,https://wifinepalservices.com/,CANDIDATE
+475,Worckhub,https://worckhub.com/,CANDIDATE
+476,Worldlink Parijat Pvt. Ltd.,https://worldlink.com.np/,VERIFIED
+477,Y-Axis International Education,https://yaxis.com/,VERIFIED
+478,Yaksera Solutions Pvt Ltd,https://yaksera.com/,CANDIDATE
+479,Yaltron Pvt. Ltd.,https://yaltron.com/,CANDIDATE
+480,Yeti Airlines Domestic Pvt. Ltd.,https://yetiairlines.com/,VERIFIED
+481,Young Minds Creation Ltd.,https://youngmindscreation.com/,CANDIDATE
+482,Your's Technology Pvt. Ltd.,https://yourstechnology.com/,CANDIDATE
+483,Zen Lab,https://zenlab.com.np/,CANDIDATE
+484,creative mass,https://www.facebook.com/creativemass5200430/,NO_SITE (FB only)
+485,dPaisa Wallet,https://dpaisa.com/,CANDIDATE

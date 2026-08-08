@@ -1,274 +1,158 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Job Monitor Dashboard</title>
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --border: #334155;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --accent: #38bdf8;
-      --green: #34d399;
-      --red: #f87171;
-      --yellow: #fbbf24;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      background: var(--card);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    header h1 { font-size: 18px; margin: 0; }
-    header .sub { color: var(--muted); font-size: 13px; }
-    main { max-width: 1100px; margin: 24px auto; padding: 0 24px; }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-    .stat {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px;
-    }
-    .stat .value { font-size: 28px; font-weight: 700; }
-    .stat .label { color: var(--muted); font-size: 13px; margin-top: 4px; }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-bottom: 28px;
-      overflow: hidden;
-    }
-    .card h2 {
-      margin: 0;
-      padding: 14px 18px;
-      font-size: 15px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); }
-    th { color: var(--muted); font-weight: 600; white-space: nowrap; }
-    tr:last-child td { border-bottom: none; }
-    td.ellipsis { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .badge {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .badge.success { background: rgba(52,211,153,.15); color: var(--green); }
-    .badge.failed { background: rgba(248,113,113,.15); color: var(--red); }
-    .badge.running { background: rgba(251,191,36,.15); color: var(--yellow); }
-    .empty { padding: 24px; text-align: center; color: var(--muted); }
-    button {
-      background: var(--accent);
-      color: #0f172a;
-      border: none;
-      border-radius: 8px;
-      font-weight: 700;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    button:disabled { opacity: .5; cursor: not-allowed; }
-    .muted { color: var(--muted); }
-    .error { color: var(--red); font-size: 12px; max-width: 480px; }
-    .count { background: var(--bg); color: var(--text); border-radius: 999px; padding: 2px 10px; font-size: 12px; }
-    details { cursor: pointer; }
-    details .req-body { white-space: pre-wrap; word-break: break-word; color: var(--text); margin-top: 6px; max-height: 300px; overflow-y: auto; }
-  </style>
-</head>
-<body>
-  <header>
-    <div>
-      <h1>Job Monitor</h1>
-      <div class="sub">Front-door scraped openings from company list</div>
-    </div>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <span class="sub" id="run-status">{{ now|date:"Y-m-d H:i" }}</span>
-      <button id="scrape-btn" type="button">Run scrape now</button>
-    </div>
-  </header>
+{% extends "openings/base.html" %}
+{% load pagination_tags %}
+{% block title %}Job Monitor — Dashboard{% endblock %}
 
-  <main>
-    <div class="stats">
-      <div class="stat">
-        <div class="value">{{ total_companies }}</div>
-        <div class="label">Companies</div>
-      </div>
-      <div class="stat">
-        <div class="value">{{ total_openings }}</div>
-        <div class="label">Active openings</div>
-      </div>
-      <div class="stat">
-        <div class="value">{{ recent_runs.0.new_jobs|default:0 }}</div>
-        <div class="label">New jobs (last run)</div>
-      </div>
-      <div class="stat">
-        <div class="value">{{ recent_runs|length }}</div>
-        <div class="label">Scrape runs logged</div>
+{% block content %}
+  <div class="stats">
+    <div class="stat">
+      <div class="value">{{ total_openings }}</div>
+      <div class="label">Active openings</div>
+    </div>
+    <div class="stat">
+      <div class="value">{{ total_companies }}</div>
+      <div class="label">Companies</div>
+    </div>
+    <div class="stat">
+      <div class="value">{{ recent_runs.0.new_jobs|default:0 }}</div>
+      <div class="label">New jobs (last run)</div>
+    </div>
+    <div class="stat">
+      <div class="value">{{ recent_runs|length }}</div>
+      <div class="label">Scrape runs logged</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Active Openings <span class="count">{{ total_openings }}</span></h2>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Title</th>
+          <th>Location</th>
+          <th>Salary</th>
+          <th>Requirements</th>
+          <th>URL</th>
+          <th>First seen</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in openings %}
+        <tr>
+          <td><a href="{% url 'company-detail' job.company_id %}">{{ job.company.name }}</a></td>
+          <td><a href="{% url 'opening-detail' job.id %}">{{ job.title }}</a></td>
+          <td>{{ job.location|default:"—" }}</td>
+          <td>{{ job.salary|default:"—" }}</td>
+          <td class="req" style="max-width:380px; font-size:12px; line-height:1.45;">
+            {% if job.requirements %}
+              <details><summary>{{ job.requirements|truncatechars:60 }}</summary><div class="req-body">{{ job.requirements|linebreaksbr }}</div></details>
+            {% elif job.description %}
+              <details><summary>{{ job.description|truncatechars:60 }}</summary><div class="req-body">{{ job.description|linebreaksbr }}</div></details>
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
+          <td class="ellipsis"><a href="{{ job.url }}" target="_blank" rel="noopener">{{ job.url }}</a></td>
+          <td class="muted">{{ job.first_seen_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="empty">No openings yet. Click "Run scrape now".</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% if openings.has_other_pages %}
+    <div class="pagination">
+      <span class="muted">Showing {{ openings.start_index }}–{{ openings.end_index }} of {{ openings.paginator.count }}</span>
+      <div class="page-links">
+        {% if openings.has_previous %}
+          <a class="step" href="?{% pagination_query request 'openings_page' openings.previous_page_number %}">«</a>
+        {% endif %}
+        {% for num in openings.paginator.page_range %}
+          {% if openings.number == num %}
+            <span class="current">{{ num }}</span>
+          {% elif num >= openings.number|add:-3 and num <= openings.number|add:3 %}
+            <a href="?{% pagination_query request 'openings_page' num %}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if openings.has_next %}
+          <a class="step" href="?{% pagination_query request 'openings_page' openings.next_page_number %}">»</a>
+        {% endif %}
       </div>
     </div>
+    {% endif %}
+  </div>
 
-    <div class="card">
-      <h2>Companies</h2>
-      <div style="overflow-x:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>Website</th>
-            <th>Career URL</th>
-            <th>Openings</th>
-            <th>Last scraped</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for company in companies %}
-          <tr>
-            <td>{{ company.name }}</td>
-            <td class="ellipsis">
-              {% if company.website %}<a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>{% else %}<span class="muted">—</span>{% endif %}
-            </td>
-            <td class="ellipsis">
-              {% if company.career_url %}<a href="{{ company.career_url }}" target="_blank" rel="noopener">{{ company.career_url }}</a>{% else %}<span class="muted">—</span>{% endif %}
-            </td>
-            <td>{{ company.openings_count }}</td>
-            <td class="muted">{% if company.last_scraped_at %}{{ company.last_scraped_at|date:"Y-m-d H:i" }}{% else %}never{% endif %}</td>
-            <td>
-              {% if company.last_error %}
-                <span class="badge failed">error</span>
-                <div class="error">{{ company.last_error }}</div>
-              {% elif company.last_scraped_at %}
-                <span class="badge success">ok</span>
-              {% else %}
-                <span class="muted">not scraped</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="6" class="empty">No companies imported. Run: python manage.py import_companies_csv companies.csv</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      </div>
+  <div class="card">
+    <h2>Top Companies <span class="count">{{ total_companies }}</span></h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Website</th>
+          <th>Active openings</th>
+          <th>Last scraped</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for company in top_companies %}
+        <tr>
+          <td><a href="{% url 'company-detail' company.id %}">{{ company.name }}</a></td>
+          <td class="ellipsis">
+            {% if company.website %}<a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>{% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td>{{ company.openings_count }}</td>
+          <td class="muted">{% if company.last_scraped_at %}{{ company.last_scraped_at|date:"Y-m-d H:i" }}{% else %}never{% endif %}</td>
+          <td>
+            {% if company.last_error %}
+              <span class="badge failed">error</span>
+            {% elif company.last_scraped_at %}
+              <span class="badge success">ok</span>
+            {% else %}
+              <span class="muted">not scraped</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="empty">No companies imported. Run: python manage.py import_companies_csv companies.csv</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="pagination">
+      <span class="muted">Showing top {{ top_companies|length }} by active openings</span>
+      <a class="step" href="{% url 'company-list' %}">View all companies »</a>
     </div>
+  </div>
 
-    <div class="card">
-      <h2>Active Openings</h2>
-      <div style="overflow-x:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>Title</th>
-            <th>Location</th>
-            <th>Salary</th>
-            <th>Requirements</th>
-            <th>URL</th>
-            <th>First seen</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for job in openings %}
-          <tr>
-            <td>{{ job.company.name }}</td>
-            <td>{{ job.title }}</td>
-            <td>{{ job.location|default:"—" }}</td>
-            <td>{{ job.salary|default:"—" }}</td>
-            <td class="req" style="max-width:380px; font-size:12px; line-height:1.45;">
-              {% if job.requirements %}
-                <details><summary>{{ job.requirements|truncatechars:60 }}</summary><div class="req-body">{{ job.requirements|linebreaksbr }}</div></details>
-              {% elif job.description %}
-                <details><summary>{{ job.description|truncatechars:60 }}</summary><div class="req-body">{{ job.description|linebreaksbr }}</div></details>
-              {% else %}
-                <span class="muted">—</span>
-              {% endif %}
-            </td>
-            <td class="ellipsis"><a href="{{ job.url }}" target="_blank" rel="noopener">{{ job.url }}</a></td>
-            <td class="muted">{{ job.first_seen_at|date:"Y-m-d H:i" }}</td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="7" class="empty">No openings yet. Click "Run scrape now".</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Recent scrape runs</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Started</th>
-            <th>Finished</th>
-            <th>Status</th>
-            <th>Companies</th>
-            <th>Jobs seen</th>
-            <th>New jobs</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for run in recent_runs %}
-          <tr>
-            <td class="muted">{{ run.started_at|date:"Y-m-d H:i" }}</td>
-            <td class="muted">{% if run.finished_at %}{{ run.finished_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
-            <td><span class="badge {{ run.status }}">{{ run.status }}</span></td>
-            <td>{{ run.companies_processed }}</td>
-            <td>{{ run.jobs_seen }}</td>
-            <td>{{ run.new_jobs }}</td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="6" class="empty">No runs yet.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </main>
-
-  <script>
-    const btn = document.getElementById('scrape-btn');
-    const status = document.getElementById('run-status');
-    btn.addEventListener('click', async () => {
-      btn.disabled = true;
-      status.textContent = 'Scrape started…';
-      try {
-        await fetch('{% url "run-scrape" %}', { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} });
-        status.textContent = 'Scrape triggered. Reload in a minute to see results.';
-      } catch (e) {
-        status.textContent = 'Failed to trigger.';
-      } finally {
-        btn.disabled = false;
-      }
-    });
-  </script>
-</body>
-</html>
+  <div class="card">
+    <h2>Recent scrape runs</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Started</th>
+          <th>Finished</th>
+          <th>Status</th>
+          <th>Companies</th>
+          <th>Jobs seen</th>
+          <th>New jobs</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in recent_runs %}
+        <tr>
+          <td class="muted">{{ run.started_at|date:"Y-m-d H:i" }}</td>
+          <td class="muted">{% if run.finished_at %}{{ run.finished_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+          <td><span class="badge {{ run.status }}">{{ run.status }}</span></td>
+          <td>{{ run.companies_processed }}</td>
+          <td>{{ run.jobs_seen }}</td>
+          <td>{{ run.new_jobs }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="empty">No runs yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

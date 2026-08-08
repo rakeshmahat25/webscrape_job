@@ -1,0 +1,185 @@
+<!doctype html>
+{% load pagination_tags %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Job Monitor{% endblock %}</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #34d399;
+      --red: #f87171;
+      --yellow: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header .brand { display: flex; align-items: baseline; gap: 12px; }
+    header h1 { font-size: 18px; margin: 0; }
+    header .sub { color: var(--muted); font-size: 13px; }
+    nav { display: flex; gap: 4px; align-items: center; }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    nav a:hover { color: var(--text); background: var(--bg); }
+    nav a.active { color: var(--accent); background: var(--bg); }
+    main { max-width: 1100px; margin: 24px auto; padding: 0 24px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .stat .value { font-size: 28px; font-weight: 700; }
+    .stat .label { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+    .card h2 {
+      margin: 0;
+      padding: 14px 18px;
+      font-size: 15px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    td.ellipsis { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge.success { background: rgba(52,211,153,.15); color: var(--green); }
+    .badge.failed { background: rgba(248,113,113,.15); color: var(--red); }
+    .badge.running { background: rgba(251,191,36,.15); color: var(--yellow); }
+    .empty { padding: 24px; text-align: center; color: var(--muted); }
+    button {
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .muted { color: var(--muted); }
+    .error { color: var(--red); font-size: 12px; max-width: 480px; }
+    .count { background: var(--bg); color: var(--text); border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+    details { cursor: pointer; }
+    details .req-body { white-space: pre-wrap; word-break: break-word; color: var(--text); margin-top: 6px; max-height: 300px; overflow-y: auto; }
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .pagination .page-links { display: flex; gap: 6px; align-items: center; }
+    .pagination a, .pagination span.current {
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      background: var(--bg);
+      text-decoration: none;
+    }
+    .pagination a:hover { border-color: var(--accent); }
+    .pagination span.current { color: var(--text); border-color: var(--accent); background: rgba(56,189,248,.12); }
+    .pagination .muted { margin-right: auto; }
+    .pagination .step { font-weight: 600; }
+    .profile-head { padding: 18px; }
+    .profile-head h1 { margin: 0 0 12px; font-size: 22px; }
+    .profile-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; font-size: 13px; }
+    .profile-meta div strong { display: block; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+    .article { padding: 18px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+    .breadcrumb { margin: 0 0 16px; font-size: 13px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1><a href="{% url 'dashboard' %}" style="color:var(--text); text-decoration:none;">Job Monitor</a></h1>
+      <div class="sub">Active openings scraped from company career pages</div>
+    </div>
+    <nav>
+      <a href="{% url 'dashboard' %}" {% if active_nav == 'dashboard' %}class="active"{% endif %}>Dashboard</a>
+      <a href="{% url 'company-list' %}" {% if active_nav == 'companies' %}class="active"{% endif %}>Companies</a>
+      <span class="sub" id="run-status">{% now "Y-m-d H:i" %}</span>
+      <button id="scrape-btn" type="button">Run scrape now</button>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    const btn = document.getElementById('scrape-btn');
+    const status = document.getElementById('run-status');
+    if (btn && status) {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        status.textContent = 'Scrape started…';
+        try {
+          await fetch('{% url "run-scrape" %}', { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} });
+          status.textContent = 'Scrape triggered. Reload in a minute to see results.';
+        } catch (e) {
+          status.textContent = 'Failed to trigger.';
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

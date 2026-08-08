@@ -14,7 +14,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "csv_file",
             type=str,
-            help="Path to CSV file. Expected columns: company_name, website, career_url",
+            help="Path to CSV file. Expected columns: sn, company_name, website",
         )
 
     def handle(self, *args, **options):
@@ -27,10 +27,18 @@ class Command(BaseCommand):
         with open(csv_file, newline="", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
 
+            fieldnames = reader.fieldnames
+            name_header = (
+                "sn"
+                if "sn" in fieldnames
+                else "name"
+                if "name" in fieldnames
+                else fieldnames[0]
+            )
+
             for row in reader:
                 name = (
-                    row.get("company_name")
-                    or row.get("name")
+                    row.get(name_header)
                     or ""
                 ).strip()
 
@@ -38,21 +46,21 @@ class Command(BaseCommand):
                     skipped_count += 1
                     continue
 
-                website = (
-                    row.get("website")
+                company_name = (
+                    row.get("company_name")
                     or ""
                 ).strip()
 
-                career_url = (
-                    row.get("career_url")
+                website = (
+                    row.get("website")
                     or ""
                 ).strip()
 
                 company, created = Company.objects.update_or_create(
                     name=name,
                     defaults={
+                        "company_name": company_name,
                         "website": website,
-                        "career_url": career_url,
                     },
                 )
 

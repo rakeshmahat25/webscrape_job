@@ -1,81 +1,164 @@
 # apps/openings/views.py
 
-import threading
 from datetime import timedelta
-
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import Company, JobOpening, ScrapeRun
+from .tasks import scrape_openings  # Import the Celery task
+
+COMPANIES_PER_PAGE = 25
+OPENINGS_PER_PAGE = 50
+DASHBOARD_JOBS_PER_PAGE = 50
+COMPANIES_SIDEBAR_COUNT = 8
 
 
-def dashboard(request):
-    """
-    Web page showing the scraped data.
-    """
+def _get_page(paginator, page_num):
+    try:
+        return paginator.page(page_num)
+    except (PageNotAnInteger, EmptyPage):
+        return paginator.page(1)
 
-    jobs = (
+
+def _active_openings_qs():
+    return (
         JobOpening.objects
         .filter(is_active=True)
         .select_related("company")
-        .order_by("-first_seen_at")[:500]
+        .order_by("-first_seen_at")
     )
 
-    recent_runs = ScrapeRun.objects.order_by("-started_at")[:10]
 
-    companies = Company.objects.annotate(
+def _companies_qs():
+    return Company.objects.annotate(
         openings_count=models.Count(
             "openings",
             filter=models.Q(openings__is_active=True),
         )
     ).order_by("name")
 
+
+def dashboard(request):
+    """
+    Web page showing the scraped data.
+    Primary: active openings. Secondary: top companies + recent runs.
+    """
+    recent_runs = ScrapeRun.objects.order_by("-started_at")[:10]
+
+    companies_qs = _companies_qs()
+    top_companies = companies_qs[:COMPANIES_SIDEBAR_COUNT]
+
+    openings_paginator = Paginator(
+        _active_openings_qs(),
+        DASHBOARD_JOBS_PER_PAGE,
+    )
+    openings = _get_page(openings_paginator, request.GET.get("openings_page"))
+
     context = {
-        "companies": companies,
-        "openings": jobs,
+        "active_nav": "dashboard",
+        "openings": openings,
+        "top_companies": top_companies,
         "recent_runs": recent_runs,
-        "total_openings": JobOpening.objects.filter(is_active=True).count(),
-        "total_companies": Company.objects.count(),
+        "total_openings": openings_paginator.count,
+        "total_companies": companies_qs.count(),
         "now": timezone.now(),
+        "run_openings_count": openings_paginator.count,
     }
 
     return render(request, "openings/dashboard.html", context)
 
 
+def company_list(request):
+    """
+    List all companies (secondary page), paginated.
+    """
+    companies_qs = _companies_qs()
+
+    paginator = Paginator(companies_qs, COMPANIES_PER_PAGE)
+    companies = _get_page(paginator, request.GET.get("page"))
+
+    context = {
+        "active_nav": "companies",
+        "companies": companies,
+        "total_companies": paginator.count,
+    }
+
+    return render(request, "openings/companies.html", context)
+
+
+def company_detail(request, company_id):
+    """
+    Company profile: full info plus all active openings scraped
+    from its career/vacancy pages.
+    """
+    company = get_object_or_404(
+        Company.objects.annotate(
+            openings_count=models.Count(
+                "openings",
+                filter=models.Q(openings__is_active=True),
+            )
+        ),
+        pk=company_id,
+    )
+
+    openings_qs = (
+        company.openings
+        .filter(is_active=True)
+        .order_by("-first_seen_at")
+    )
+
+    paginator = Paginator(openings_qs, OPENINGS_PER_PAGE)
+    openings = _get_page(paginator, request.GET.get("page"))
+
+    context = {
+        "active_nav": "companies",
+        "company": company,
+        "openings": openings,
+    }
+
+    return render(request, "openings/company_detail.html", context)
+
+
+def opening_detail(request, job_id):
+    """
+    Single job page: description, requirements, location, salary.
+    """
+    job = get_object_or_404(
+        JobOpening.objects.select_related("company"),
+        pk=job_id,
+    )
+
+    context = {
+        "job": job,
+    }
+
+    return render(request, "openings/opening_detail.html", context)
+
+
 @csrf_exempt
 def run_scrape_now(request):
     """
-    POST-only: trigger a scrape in the background and redirect back.
+    POST-only: Trigger a scrape safely through Celery in the background.
     """
-
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=405)
 
-    from .services.scraper import run_scrape_for_active_companies
-
-    def _runner():
-        try:
-            run_scrape_for_active_companies()
-        except Exception:
-            pass
-
-    threading.Thread(target=_runner, daemon=True).start()
-
-    return JsonResponse({"triggered": True})
+    try:
+        # Dispatch asynchronously via Celery (Non-blocking)
+        task = scrape_openings.delay(limit=None)
+        return JsonResponse({"triggered": True, "task_id": task.id})
+    except Exception as e:
+        return JsonResponse({"triggered": False, "error": str(e)}, status=500)
 
 
 def latest_openings(request):
     """
     Simple API endpoint.
-
-    Example:
-        /api/openings/latest/
-        /api/openings/latest/?days=3
     """
-
     try:
         days = int(request.GET.get("days", 3))
     except Exception:
@@ -91,7 +174,6 @@ def latest_openings(request):
     )
 
     results = []
-
     for job in jobs:
         results.append(
             {

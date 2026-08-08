@@ -3,6 +3,15 @@
 import os
 import sys
 
+# Windows consoles default to cp1252, which cannot encode characters
+# like Nepali text scraped from job pages. Fall back to a safe
+# lossy encoding instead of crashing on print().
+for stream in (sys.stdout, sys.stderr):
+    try:
+        stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
 
 def main():
     """Run administrative tasks."""

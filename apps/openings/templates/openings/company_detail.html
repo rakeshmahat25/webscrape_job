@@ -1,0 +1,111 @@
+{% extends "openings/base.html" %}
+{% load pagination_tags %}
+{% block title %}{{ company.name }} — Job Monitor{% endblock %}
+
+{% block content %}
+  <div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="{% url 'company-list' %}">Companies</a> /
+    {{ company.name }}
+  </div>
+
+  <div class="card">
+    <div class="profile-head">
+      <h1>{{ company.name }}</h1>
+      <div class="profile-meta">
+        <div>
+          <strong>Website</strong>
+          {% if company.website %}<a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>{% else %}<span class="muted">—</span>{% endif %}
+        </div>
+        <div>
+          <strong>Career URL</strong>
+          {% if company.career_url %}<a href="{{ company.career_url }}" target="_blank" rel="noopener">{{ company.career_url }}</a>{% else %}<span class="muted">—</span>{% endif %}
+        </div>
+        <div>
+          <strong>Active openings</strong>
+          {{ company.openings_count }}
+        </div>
+        <div>
+          <strong>Last scraped</strong>
+          {% if company.last_scraped_at %}{{ company.last_scraped_at|date:"Y-m-d H:i" }}{% else %}<span class="muted">never</span>{% endif %}
+        </div>
+        <div>
+          <strong>Status</strong>
+          {% if company.last_error %}
+            <span class="badge failed">error</span>
+          {% elif company.last_scraped_at %}
+            <span class="badge success">ok</span>
+          {% else %}
+            <span class="muted">not scraped</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if company.last_error %}
+      <div class="error" style="margin-top:12px;">Last error: {{ company.last_error }}</div>
+      {% endif %}
+      {% if company.notes %}
+      <div class="muted" style="margin-top:12px;">{{ company.notes }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Active Openings <span class="count">{{ openings.paginator.count }}</span></h2>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Location</th>
+          <th>Salary</th>
+          <th>Requirements</th>
+          <th>URL</th>
+          <th>First seen</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in openings %}
+        <tr>
+          <td><a href="{% url 'opening-detail' job.id %}">{{ job.title }}</a></td>
+          <td>{{ job.location|default:"—" }}</td>
+          <td>{{ job.salary|default:"—" }}</td>
+          <td class="req" style="max-width:380px; font-size:12px; line-height:1.45;">
+            {% if job.requirements %}
+              <details><summary>{{ job.requirements|truncatechars:60 }}</summary><div class="req-body">{{ job.requirements|linebreaksbr }}</div></details>
+            {% elif job.description %}
+              <details><summary>{{ job.description|truncatechars:60 }}</summary><div class="req-body">{{ job.description|linebreaksbr }}</div></details>
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
+          <td class="ellipsis"><a href="{{ job.url }}" target="_blank" rel="noopener">{{ job.url }}</a></td>
+          <td class="muted">{{ job.first_seen_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="empty">No active openings scraped from this company's career/vacancy pages yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% if openings.has_other_pages %}
+    <div class="pagination">
+      <span class="muted">Showing {{ openings.start_index }}–{{ openings.end_index }} of {{ openings.paginator.count }}</span>
+      <div class="page-links">
+        {% if openings.has_previous %}
+          <a class="step" href="?{% pagination_query request 'page' openings.previous_page_number %}">«</a>
+        {% endif %}
+        {% for num in openings.paginator.page_range %}
+          {% if openings.number == num %}
+            <span class="current">{{ num }}</span>
+          {% elif num >= openings.number|add:-3 and num <= openings.number|add:3 %}
+            <a href="?{% pagination_query request 'page' num %}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if openings.has_next %}
+          <a class="step" href="?{% pagination_query request 'page' openings.next_page_number %}">»</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,5 +1,6 @@
 # apps/openings/services/scraper.py
 
+import random
 import os
 import re
 import time
@@ -9,6 +10,7 @@ from urllib.parse import urlparse
 # which makes Django think we are in an async context. Allow ORM calls.
 os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
 
+from django.db import close_old_connections
 from django.utils import timezone
 
 from playwright.sync_api import sync_playwright
@@ -87,6 +89,28 @@ SKIP_DOMAINS = (
     "tiktok.com",
 )
 
+
+
+def safe_page_goto(page, url, retries=3):
+    """
+    Navigate to a URL using Playwright with exponential backoff and jitter 
+    to handle transient connection failures or server drops.
+    """
+    for attempt in range(retries):
+        try:
+            response = page.goto(
+                url,
+                timeout=PAGE_TIMEOUT,
+                wait_until="domcontentloaded",
+            )
+            return response
+        except Exception as e:
+            if attempt == retries - 1:
+                raise e
+            # Exponential backoff with jitter: 2s, 4s, 8s + random milliseconds
+            sleep_time = (2 ** attempt) + random.uniform(0.5, 1.5)
+            time.sleep(sleep_time)
+    return None
 
 def clean_title(title: str) -> str:
     """
@@ -267,11 +291,7 @@ def find_career_page(page, website: str):
 
     for url in candidates:
         try:
-            response = page.goto(
-                url,
-                timeout=PAGE_TIMEOUT,
-                wait_until="domcontentloaded",
-            )
+            response = safe_page_goto(page, url)
 
             if response and response.ok and page_has_job_signal(page):
                 return url
@@ -481,6 +501,10 @@ def run_scrape_for_active_companies(limit=None):
     - Celery task
     """
 
+    # Close stale DB connections. Managed Postgres kills idle connections,
+    # and a scrape runs for hours while holding one connection.
+    close_old_connections()
+
     run = ScrapeRun.objects.create(
         status=ScrapeRun.Status.RUNNING
     )
@@ -516,6 +540,10 @@ def run_scrape_for_active_companies(limit=None):
             page = context.new_page()
 
             for company in companies:
+                # Drop any stale connection before DB work (browser
+                # navigation below can take minutes).
+                close_old_connections()
+
                 processed += 1
 
                 try:
@@ -580,6 +608,7 @@ def run_scrape_for_active_companies(limit=None):
                         job.location = details["location"]
                         job.salary = details["salary"]
 
+                        close_old_connections()
                         job.save()
 
                         time.sleep(REQUEST_DELAY_SECONDS)
@@ -615,6 +644,7 @@ def run_scrape_for_active_companies(limit=None):
         run.message = str(exc)
 
     finally:
+        close_old_connections()
         run.finished_at = timezone.now()
         run.companies_processed = processed
         run.jobs_seen = jobs_seen

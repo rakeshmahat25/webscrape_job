@@ -1,0 +1,59 @@
+{% extends "openings/base.html" %}
+{% block title %}{{ job.title }} — Job Monitor{% endblock %}
+
+{% block content %}
+  <div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="{% url 'company-detail' job.company_id %}">{{ job.company.name }}</a> /
+    {{ job.title }}
+  </div>
+
+  <div class="card">
+    <div class="profile-head">
+      <h1>{{ job.title }}</h1>
+      <div class="profile-meta">
+        <div>
+          <strong>Company</strong>
+          <a href="{% url 'company-detail' job.company_id %}">{{ job.company.name }}</a>
+        </div>
+        <div>
+          <strong>Location</strong>
+          {{ job.location|default:"—" }}
+        </div>
+        <div>
+          <strong>Salary</strong>
+          {{ job.salary|default:"—" }}
+        </div>
+        <div>
+          <strong>First seen</strong>
+          {{ job.first_seen_at|date:"Y-m-d H:i" }}
+        </div>
+        <div>
+          <strong>Last seen</strong>
+          {{ job.last_seen_at|date:"Y-m-d H:i" }}
+        </div>
+        <div>
+          <strong>Source page</strong>
+          {% if job.source_url %}<a href="{{ job.source_url }}" target="_blank" rel="noopener">{{ job.source_url|truncatechars:50 }}</a>{% else %}<span class="muted">—</span>{% endif %}
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <a href="{{ job.url }}" target="_blank" rel="noopener"><button type="button">Open job page »</button></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Description</h2>
+    <div class="article">
+      {% if job.description %}{{ job.description|linebreaksbr }}{% else %}<span class="muted">No description scraped.</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Requirements</h2>
+    <div class="article">
+      {% if job.requirements %}{{ job.requirements|linebreaksbr }}{% else %}<span class="muted">No requirements scraped.</span>{% endif %}
+    </div>
+  </div>
+{% endblock %}

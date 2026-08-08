@@ -3,3 +3,5 @@ celery>=5.3
 redis>=5.0
 playwright>=1.44
 apify-client>=1.0
+python-dotenv>=1.0
+psycopg2-binary>=2.9

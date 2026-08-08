@@ -9,8 +9,8 @@ from .models import Company, JobOpening, ScrapeRun
 class CompanyAdmin(admin.ModelAdmin):
     list_display = (
         "name",
+        "company_name",
         "website",
-        "career_url",
         "is_active",
         "last_scraped_at",
     )
@@ -21,8 +21,8 @@ class CompanyAdmin(admin.ModelAdmin):
 
     search_fields = (
         "name",
+        "company_name",
         "website",
-        "career_url",
     )
 
     readonly_fields = (
