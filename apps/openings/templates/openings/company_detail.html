@@ -11,16 +11,13 @@
 
   <div class="card">
     <div class="profile-head">
-      <h1>{{ company.name }}</h1>
+      <h1>{{ company.company_name }}</h1>
       <div class="profile-meta">
         <div>
           <strong>Website</strong>
           {% if company.website %}<a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>{% else %}<span class="muted">—</span>{% endif %}
         </div>
-        <div>
-          <strong>Career URL</strong>
-          {% if company.career_url %}<a href="{{ company.career_url }}" target="_blank" rel="noopener">{{ company.career_url }}</a>{% else %}<span class="muted">—</span>{% endif %}
-        </div>
+        
         <div>
           <strong>Active openings</strong>
           {{ company.openings_count }}

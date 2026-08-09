@@ -40,7 +40,7 @@
       <tbody>
         {% for job in openings %}
         <tr>
-          <td><a href="{% url 'company-detail' job.company_id %}">{{ job.company.name }}</a></td>
+          <td><a href="{% url 'company-detail' job.company_id %}">{{ job.company.company_name }}</a></td>
           <td><a href="{% url 'opening-detail' job.id %}">{{ job.title }}</a></td>
           <td>{{ job.location|default:"—" }}</td>
           <td>{{ job.salary|default:"—" }}</td>
@@ -99,7 +99,7 @@
       <tbody>
         {% for company in top_companies %}
         <tr>
-          <td><a href="{% url 'company-detail' company.id %}">{{ company.name }}</a></td>
+          <td><a href="{% url 'company-detail' company.id %}">{{ company.company_name }}</a></td>
           <td class="ellipsis">
             {% if company.website %}<a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>{% else %}<span class="muted">—</span>{% endif %}
           </td>

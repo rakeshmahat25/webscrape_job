@@ -35,6 +35,11 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def display_name(self):
+        """Return company_name if set, otherwise fall back to name."""
+        return self.company_name or self.name
+
 
 class JobOpening(models.Model):
     """
@@ -68,13 +73,17 @@ class JobOpening(models.Model):
 
     raw_title = models.TextField(blank=True)
 
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, default="")
 
-    requirements = models.TextField(blank=True)
+    requirements = models.TextField(blank=True, default="")
 
-    location = models.CharField(max_length=500, blank=True)
+    location = models.CharField(max_length=500, blank=True, default="")
 
-    salary = models.CharField(max_length=500, blank=True)
+    salary = models.CharField(max_length=500, blank=True, default="")
+
+    education = models.CharField(max_length=500, blank=True, default="")
+
+    deadline = models.CharField(max_length=50, blank=True, default="")
 
     class Meta:
         verbose_name = "Job Opening"

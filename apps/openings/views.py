@@ -39,7 +39,7 @@ def _companies_qs():
             "openings",
             filter=models.Q(openings__is_active=True),
         )
-    ).order_by("name")
+    ).order_by("-openings_count", "name")
 
 
 def dashboard(request):
@@ -142,17 +142,21 @@ def opening_detail(request, job_id):
 @csrf_exempt
 def run_scrape_now(request):
     """
-    POST-only: Trigger a scrape safely through Celery in the background.
+    POST-only: Trigger a scrape in a background thread.
+    Always runs directly — does not depend on Celery worker.
     """
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=405)
 
-    try:
-        # Dispatch asynchronously via Celery (Non-blocking)
-        task = scrape_openings.delay(limit=None)
-        return JsonResponse({"triggered": True, "task_id": task.id})
-    except Exception as e:
-        return JsonResponse({"triggered": False, "error": str(e)}, status=500)
+    import threading
+    from .services.scraper import run_scrape_for_active_companies
+
+    def _run():
+        run_scrape_for_active_companies(limit=None)
+
+    thread = threading.Thread(target=_run, daemon=True)
+    thread.start()
+    return JsonResponse({"triggered": True, "mode": "threaded"})
 
 
 def latest_openings(request):
@@ -178,12 +182,14 @@ def latest_openings(request):
         results.append(
             {
                 "id": job.id,
-                "company": job.company.name,
+                "company": job.company.display_name,
                 "title": job.title,
                 "url": job.url,
                 "source_url": job.source_url,
                 "location": job.location,
                 "salary": job.salary,
+                "education": job.education,
+                "deadline": job.deadline,
                 "description": job.description,
                 "requirements": job.requirements,
                 "first_seen_at": job.first_seen_at.isoformat(),

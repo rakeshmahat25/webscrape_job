@@ -4,7 +4,7 @@
 {% block content %}
   <div class="breadcrumb">
     <a href="{% url 'dashboard' %}">Dashboard</a> /
-    <a href="{% url 'company-detail' job.company_id %}">{{ job.company.name }}</a> /
+    <a href="{% url 'company-detail' job.company_id %}">{{ job.company.display_name }}</a> /
     {{ job.title }}
   </div>
 
@@ -14,15 +14,23 @@
       <div class="profile-meta">
         <div>
           <strong>Company</strong>
-          <a href="{% url 'company-detail' job.company_id %}">{{ job.company.name }}</a>
+          <a href="{% url 'company-detail' job.company_id %}">{{ job.company.display_name }}</a>
         </div>
         <div>
           <strong>Location</strong>
           {{ job.location|default:"—" }}
         </div>
         <div>
+          <strong>Education</strong>
+          {{ job.education|default:"—" }}
+        </div>
+        <div>
           <strong>Salary</strong>
           {{ job.salary|default:"—" }}
+        </div>
+        <div>
+          <strong>Deadline</strong>
+          {{ job.deadline|default:"—" }}
         </div>
         <div>
           <strong>First seen</strong>

@@ -28,13 +28,7 @@ class Command(BaseCommand):
             reader = csv.DictReader(f)
 
             fieldnames = reader.fieldnames
-            name_header = (
-                "sn"
-                if "sn" in fieldnames
-                else "name"
-                if "name" in fieldnames
-                else fieldnames[0]
-            )
+            name_header = "company_name" if "company_name" in fieldnames else "name" if "name" in fieldnames else fieldnames[0]
 
             for row in reader:
                 name = (

@@ -7,15 +7,16 @@
   <title>{% block title %}Job Monitor{% endblock %}</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --border: #334155;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --accent: #38bdf8;
+      --bg: #0a0a0a;
+      --card: #141414;
+      --border: #333333;
+      --text: #f5f5f5;
+      --muted: #9a9a9a;
+      --accent: #ffd700;
+      --secondary: #3b82f6;
       --green: #34d399;
       --red: #f87171;
-      --yellow: #fbbf24;
+      --yellow: #ffd700;
     }
     * { box-sizing: border-box; }
     body {
@@ -63,7 +64,7 @@
       border-radius: 12px;
       padding: 18px;
     }
-    .stat .value { font-size: 28px; font-weight: 700; }
+    .stat .value { font-size: 28px; font-weight: 700; color: var(--secondary); }
     .stat .label { color: var(--muted); font-size: 13px; margin-top: 4px; }
     .card {
       background: var(--card);
@@ -97,11 +98,11 @@
     }
     .badge.success { background: rgba(52,211,153,.15); color: var(--green); }
     .badge.failed { background: rgba(248,113,113,.15); color: var(--red); }
-    .badge.running { background: rgba(251,191,36,.15); color: var(--yellow); }
+    .badge.running { background: rgba(255,215,0,.15); color: var(--yellow); }
     .empty { padding: 24px; text-align: center; color: var(--muted); }
     button {
       background: var(--accent);
-      color: #0f172a;
+      color: #000000;
       border: none;
       border-radius: 8px;
       font-weight: 700;
@@ -112,7 +113,7 @@
     button:disabled { opacity: .5; cursor: not-allowed; }
     .muted { color: var(--muted); }
     .error { color: var(--red); font-size: 12px; max-width: 480px; }
-    .count { background: var(--bg); color: var(--text); border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+    .count { background: var(--bg); color: var(--secondary); border-radius: 999px; padding: 2px 10px; font-size: 12px; }
     details { cursor: pointer; }
     details .req-body { white-space: pre-wrap; word-break: break-word; color: var(--text); margin-top: 6px; max-height: 300px; overflow-y: auto; }
     .pagination {
@@ -134,7 +135,7 @@
       text-decoration: none;
     }
     .pagination a:hover { border-color: var(--accent); }
-    .pagination span.current { color: var(--text); border-color: var(--accent); background: rgba(56,189,248,.12); }
+    .pagination span.current { color: var(--text); border-color: var(--accent); background: rgba(255,215,0,.12); }
     .pagination .muted { margin-right: auto; }
     .pagination .step { font-weight: 600; }
     .profile-head { padding: 18px; }
@@ -149,7 +150,7 @@
   <header>
     <div class="brand">
       <h1><a href="{% url 'dashboard' %}" style="color:var(--text); text-decoration:none;">Job Monitor</a></h1>
-      <div class="sub">Active openings scraped from company career pages</div>
+      
     </div>
     <nav>
       <a href="{% url 'dashboard' %}" {% if active_nav == 'dashboard' %}class="active"{% endif %}>Dashboard</a>
@@ -171,10 +172,15 @@
         btn.disabled = true;
         status.textContent = 'Scrape started…';
         try {
-          await fetch('{% url "run-scrape" %}', { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} });
-          status.textContent = 'Scrape triggered. Reload in a minute to see results.';
+          const resp = await fetch('{% url "run-scrape" %}', { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} });
+          const data = await resp.json();
+          if (data.triggered) {
+            status.textContent = 'Scrape triggered. Reload in a minute to see results.';
+          } else {
+            status.textContent = 'Failed: ' + (data.error || 'unknown error');
+          }
         } catch (e) {
-          status.textContent = 'Failed to trigger.';
+          status.textContent = 'Failed to trigger scrape.';
         } finally {
           btn.disabled = false;
         }

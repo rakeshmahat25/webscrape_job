@@ -11,9 +11,9 @@
     <table>
       <thead>
         <tr>
+          <th>S.No</th>
           <th>Company</th>
           <th>Website</th>
-          <th>Career URL</th>
           <th>Active openings</th>
           <th>Last scraped</th>
           <th>Status</th>
@@ -22,12 +22,10 @@
       <tbody>
         {% for company in companies %}
         <tr>
-          <td><a href="{% url 'company-detail' company.id %}">{{ company.name }}</a></td>
+          <td>{{ forloop.counter }}</td>
+          <td><a href="{% url 'company-detail' company.id %}">{{ company.company_name }}</a></td>
           <td class="ellipsis">
             {% if company.website %}<a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>{% else %}<span class="muted">—</span>{% endif %}
-          </td>
-          <td class="ellipsis">
-            {% if company.career_url %}<a href="{{ company.career_url }}" target="_blank" rel="noopener">{{ company.career_url }}</a>{% else %}<span class="muted">—</span>{% endif %}
           </td>
           <td>{{ company.openings_count }}</td>
           <td class="muted">{% if company.last_scraped_at %}{{ company.last_scraped_at|date:"Y-m-d H:i" }}{% else %}never{% endif %}</td>

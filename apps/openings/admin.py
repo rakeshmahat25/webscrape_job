@@ -36,8 +36,11 @@ class CompanyAdmin(admin.ModelAdmin):
 @admin.register(JobOpening)
 class JobOpeningAdmin(admin.ModelAdmin):
     list_display = (
-        "title",
         "company",
+        "title",
+        "location",
+        "salary",
+        "deadline",
         "url",
         "first_seen_at",
         "last_seen_at",
@@ -53,6 +56,7 @@ class JobOpeningAdmin(admin.ModelAdmin):
         "title",
         "url",
         "company__name",
+        "company__company_name",
     )
 
     readonly_fields = (
@@ -68,6 +72,8 @@ class JobOpeningAdmin(admin.ModelAdmin):
         "source_url",
         "location",
         "salary",
+        "education",
+        "deadline",
         "description",
         "requirements",
         "is_active",
