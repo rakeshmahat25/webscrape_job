@@ -55,7 +55,7 @@ coverage.xml
 .pytest_cache/
 cover/
 .envp
-staticfiles/
+staticfiles
 
 # Translations
 *.mo

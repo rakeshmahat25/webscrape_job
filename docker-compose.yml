@@ -1,0 +1,102 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-job_monitor}
+      POSTGRES_USER: ${DB_USER:-job_monitor}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-job_monitor}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-job_monitor} -d ${DB_NAME:-job_monitor}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  web:
+    build: .
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+    env_file: .env
+    environment:
+      DJANGO_DEBUG: "0"
+      SECURE_SSL_REDIRECT: "0"
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME:-job_monitor}
+      DB_USER: ${DB_USER:-job_monitor}
+      DB_PASSWORD: ${DB_PASSWORD:-job_monitor}
+      DB_HOST: db
+      DB_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: celery -A config worker --pool=gevent --concurrency=10 -l info
+    env_file: .env
+    environment:
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME:-job_monitor}
+      DB_USER: ${DB_USER:-job_monitor}
+      DB_PASSWORD: ${DB_PASSWORD:-job_monitor}
+      DB_HOST: db
+      DB_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  beat:
+    build: .
+    command: celery -A config beat --loglevel=info -s /data/celerybeat-schedule
+    env_file: .env
+    environment:
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME:-job_monitor}
+      DB_USER: ${DB_USER:-job_monitor}
+      DB_PASSWORD: ${DB_PASSWORD:-job_monitor}
+      DB_HOST: db
+      DB_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - beat_data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  beat_data:

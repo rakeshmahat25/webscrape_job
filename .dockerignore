@@ -1,0 +1,17 @@
+.git
+.gitignore
+venv
+*.pyc
+__pycache__
+.ipynb_checkpoints
+.env
+.envp
+*.sqlite3
+celerybeat-schedule*
+staticfiles
+Dockerfile
+docker-compose.yml
+.dockerignore
+start_web.ps1
+start_scheduler.ps1
+start.sh
