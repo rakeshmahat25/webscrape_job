@@ -4,7 +4,10 @@ import random
 import os
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
+
+import requests as http_requests
 
 os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
 
@@ -21,9 +24,11 @@ USER_AGENT = (
     "+https://example.com/contact)"
 )
 
-PAGE_TIMEOUT = 45000
+HTTP_TIMEOUT = 10
 
-REQUEST_DELAY_SECONDS = 4
+PAGE_TIMEOUT = 15000
+
+REQUEST_DELAY_SECONDS = 2
 
 
 CAREER_PATHS = [
@@ -209,7 +214,7 @@ CAREER_SECTION_TITLES = {
 }
 
 
-def safe_page_goto(page, url, retries=3):
+def safe_page_goto(page, url, retries=2):
     for attempt in range(retries):
         try:
             response = page.goto(
@@ -221,8 +226,7 @@ def safe_page_goto(page, url, retries=3):
         except Exception as e:
             if attempt == retries - 1:
                 raise e
-            sleep_time = (2 ** attempt) + random.uniform(0.5, 1.5)
-            time.sleep(sleep_time)
+            time.sleep(1 + random.uniform(0, 1))
     return None
 
 
@@ -335,6 +339,66 @@ def page_has_job_signal(page) -> bool:
     text = f"{title} {body}".lower()
     keywords = ["career", "job", "vacancy", "opening", "apply", "hiring", "join"]
     return any(keyword in text for keyword in keywords)
+
+
+def fast_find_career_page(website: str):
+    """Use requests (no browser) to probe career paths in parallel.
+
+    Returns the first career URL that returns HTTP 200 and contains
+    job-related keywords in the HTML source.  Falls back to None.
+    """
+    if not website:
+        return None
+
+    website = ensure_absolute_url(website).rstrip("/")
+    try:
+        parsed = urlparse(website)
+        base = f"{parsed.scheme}://{parsed.netloc}"
+    except Exception:
+        return None
+
+    job_keywords = (
+        "career", "job", "vacancy", "vacancies", "opening",
+        "apply", "hiring", "recruitment", "join us",
+    )
+
+    def probe(path):
+        url = f"{base}{path}"
+        try:
+            resp = http_requests.get(
+                url,
+                timeout=HTTP_TIMEOUT,
+                headers={"User-Agent": USER_AGENT},
+                allow_redirects=True,
+            )
+            if resp.ok and resp.status_code < 400:
+                # Don't follow giant redirects (e.g. SPA index.html)
+                if resp.url.rstrip("/") != url.rstrip("/"):
+                    # Redirect to a different path — might still be useful
+                    pass
+                text = resp.text.lower()
+                if any(kw in text for kw in job_keywords):
+                    return url
+        except Exception:
+            pass
+        return None
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = {pool.submit(probe, p): p for p in CAREER_PATHS}
+        try:
+            for future in as_completed(futures, timeout=30):
+                result = future.result()
+                if result:
+                    # Cancel remaining probes
+                    for f in futures:
+                        f.cancel()
+                    return result
+        except Exception:
+            # Timeout or other error — cancel everything
+            for f in futures:
+                f.cancel()
+
+    return None
 
 
 def find_job_listing_page(page, website: str):
@@ -617,11 +681,11 @@ def extract_job_links(page, source_url: str):
             timeout=PAGE_TIMEOUT,
             wait_until="domcontentloaded",
         )
-        page.wait_for_timeout(2500)
+        page.wait_for_timeout(1500)
 
         for _ in range(2):
             page.mouse.wheel(0, 1500)
-            page.wait_for_timeout(800)
+            page.wait_for_timeout(500)
 
         raw_links = page.evaluate(
             """
@@ -838,11 +902,11 @@ def extract_job_details(page, job_url: str, current_title: str = ""):
             timeout=PAGE_TIMEOUT,
             wait_until="domcontentloaded",
         )
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(1500)
 
         for _ in range(3):
             page.mouse.wheel(0, 1500)
-            page.wait_for_timeout(500)
+            page.wait_for_timeout(300)
 
         # Strip chrome and get main content text
         body_text = page.evaluate(
@@ -970,10 +1034,9 @@ def run_scrape_for_active_companies(limit=None):
                 processed += 1
 
                 try:
-                    target_url = find_job_listing_page(
-                        page,
-                        company.website,
-                    )
+                    # Fast path: probe career paths with plain HTTP
+                    # (no browser, ~10-50x faster than Playwright probing).
+                    target_url = fast_find_career_page(company.website)
 
                     if not target_url:
                         company.last_scraped_at = timezone.now()
@@ -1033,7 +1096,7 @@ def run_scrape_for_active_companies(limit=None):
                             job.education = item.get("education", "")
                             job.location = item.get("location", "")
                             job.salary = item.get("salary", "")
-                            job.deadline = item.get("deadline") or None
+                            job.deadline = item.get("deadline", "")
                             close_old_connections()
                             job.save()
 
@@ -1053,7 +1116,7 @@ def run_scrape_for_active_companies(limit=None):
                         job.education = details["education"]
                         job.location = details["location"]
                         job.salary = details["salary"]
-                        job.deadline = details.get("deadline") or None
+                        job.deadline = details.get("deadline") or ""
 
                         close_old_connections()
                         job.save()

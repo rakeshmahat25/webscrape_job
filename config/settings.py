@@ -126,6 +126,12 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 
+# Windows has no fork() and billiard's prefork pool crashes there,
+# so default to the solo pool (tasks run in-process, one at a time).
+# Linux/Docker deployments can still override with --pool=gevent
+# on the command line.
+CELERY_WORKER_POOL = os.getenv("CELERY_WORKER_POOL", "solo")
+
 # Run every 3 days
 CELERY_BEAT_SCHEDULE = {
     "scrape-job-openings-every-3-days": {
