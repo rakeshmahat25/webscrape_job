@@ -1,19 +1,319 @@
 # apps/openings/tests.py
 
+import io
 import re
-from django.test import TestCase
+from datetime import timedelta
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
+from urllib.robotparser import RobotFileParser
 
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
+from django.utils import timezone
+
+from apps.openings.models import Company, JobOpening, ScrapeRun
+from apps.openings.services.imports import import_companies_from_csv
 from apps.openings.services.scraper import (
     parse_job_blocks,
     is_job_link,
     is_listing_page_url,
     strip_query,
     should_skip_url,
+    infer_experience_level,
+    reset_robots_cache,
+    robots_allow,
+    parse_retry_after,
+    RateLimitedError,
+    fast_find_career_page,
+    run_scrape_for_active_companies,
     IGNORE_TITLES,
     CAREER_SECTION_TITLES,
     ROLE_KEYWORD_RE,
     JOB_KEYWORD_RE,
 )
+
+
+class ImportCompaniesViewTest(TestCase):
+    def setUp(self):
+        self.staff = User.objects.create_user(
+            "owner", password="pass12345", is_staff=True
+        )
+        self.user = User.objects.create_user(
+            "normal", password="pass12345"
+        )
+
+    def test_anonymous_redirects_to_login(self):
+        resp = self.client.get("/import-companies/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/accounts/login/", resp.url)
+
+    def test_non_staff_forbidden(self):
+        self.client.login(username="normal", password="pass12345")
+        resp = self.client.get("/import-companies/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_staff_can_upload_csv(self):
+        self.client.login(username="owner", password="pass12345")
+        csv_text = (
+            "sn,company_name,website,Status\n"
+            "1,NewCo,https://newco.com,CANDIDATE\n"
+        )
+        resp = self.client.post(
+            "/import-companies/",
+            {
+                "csv_file": SimpleUploadedFile(
+                    "companies.csv",
+                    csv_text.encode("utf-8-sig"),
+                    content_type="text/csv",
+                )
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(Company.objects.filter(name="NewCo").exists())
+        self.assertContains(resp, "Created")
+        self.assertContains(resp, "1")
+
+    def test_staff_upload_dedups_against_db(self):
+        Company.objects.create(
+            name="Existing Co", website="https://old.com"
+        )
+        self.client.login(username="owner", password="pass12345")
+        csv_text = "sn,company_name,website\n1,Existing Co,https://new.com\n"
+        resp = self.client.post(
+            "/import-companies/",
+            {
+                "csv_file": SimpleUploadedFile(
+                    "companies.csv",
+                    csv_text.encode("utf-8-sig"),
+                    content_type="text/csv",
+                )
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(Company.objects.filter(name="Existing Co").count(), 1)
+        self.assertEqual(
+            Company.objects.get(name="Existing Co").website, "https://new.com"
+        )
+
+    def test_staff_rejects_non_csv(self):
+        self.client.login(username="owner", password="pass12345")
+        resp = self.client.post(
+            "/import-companies/",
+            {
+                "csv_file": SimpleUploadedFile(
+                    "companies.txt",
+                    b"hello",
+                    content_type="text/plain",
+                )
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Only .csv files are allowed")
+        self.assertEqual(Company.objects.count(), 0)
+
+    def test_staff_upload_without_file(self):
+        self.client.login(username="owner", password="pass12345")
+        resp = self.client.post("/import-companies/", {})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Please choose a CSV file")
+
+
+class LoginRequiredTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("tester", password="pass12345")
+
+    def test_dashboard_redirects_anonymous(self):
+        resp = self.client.get("/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/accounts/login/", resp.url)
+
+    def test_company_list_redirects_anonymous(self):
+        resp = self.client.get("/companies/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/accounts/login/", resp.url)
+
+    def test_search_redirects_anonymous(self):
+        resp = self.client.get("/search/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/accounts/login/", resp.url)
+
+    def test_latest_openings_redirects_anonymous(self):
+        resp = self.client.get("/api/openings/latest/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/accounts/login/", resp.url)
+
+    def test_run_scrape_redirects_anonymous(self):
+        resp = self.client.post("/run-scrape/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/accounts/login/", resp.url)
+
+    def test_login_page_renders(self):
+        resp = self.client.get("/accounts/login/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Sign in")
+
+    def test_authenticated_user_reaches_dashboard(self):
+        self.client.login(username="tester", password="pass12345")
+        resp = self.client.get("/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Job Monitor")
+
+
+class JobSearchTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("tester", password="pass12345")
+        self.client.login(username="tester", password="pass12345")
+        self.company = Company.objects.create(
+            name="Acme",
+            company_name="Acme Pvt. Ltd.",
+            website="https://acme.com",
+        )
+        self.junior = JobOpening.objects.create(
+            company=self.company,
+            job_key="junior-key",
+            title="Junior Python Developer",
+            requirements="Entry level",
+            experience_level=JobOpening.ExperienceLevel.JUNIOR,
+        )
+        self.intern = JobOpening.objects.create(
+            company=self.company,
+            job_key="intern-key",
+            title="Marketing Intern",
+            requirements="Internship",
+            experience_level=JobOpening.ExperienceLevel.INTERN,
+        )
+        self.senior = JobOpening.objects.create(
+            company=self.company,
+            job_key="senior-key",
+            title="Senior QA Engineer",
+            requirements="5+ years experience",
+            experience_level=JobOpening.ExperienceLevel.SENIOR,
+        )
+
+    def test_keyword_matches_title(self):
+        resp = self.client.get("/search/", {"q": "Python"})
+        self.assertContains(resp, "Junior Python Developer")
+        self.assertNotContains(resp, "Marketing Intern")
+
+    def test_keyword_matches_requirements(self):
+        resp = self.client.get("/search/", {"q": "Internship"})
+        self.assertContains(resp, "Marketing Intern")
+
+    def test_keyword_matches_company_name(self):
+        resp = self.client.get("/search/", {"q": "Acme"})
+        self.assertEqual(resp.context["total_results"], 3)
+
+    def test_level_filter(self):
+        resp = self.client.get("/search/", {"level": "intern"})
+        self.assertContains(resp, "Marketing Intern")
+        self.assertNotContains(resp, "Junior Python Developer")
+        self.assertNotContains(resp, "Senior QA Engineer")
+
+    def test_combined_query_and_level(self):
+        resp = self.client.get("/search/", {"q": "Senior", "level": "senior"})
+        self.assertContains(resp, "Senior QA Engineer")
+        self.assertEqual(resp.context["total_results"], 1)
+
+    def test_no_results(self):
+        resp = self.client.get("/search/", {"q": "zzzzz"})
+        self.assertEqual(resp.context["total_results"], 0)
+        self.assertContains(resp, "No openings match")
+
+    def test_inactive_jobs_excluded(self):
+        self.senior.is_active = False
+        self.senior.save()
+        resp = self.client.get("/search/", {"q": "QA"})
+        self.assertEqual(resp.context["total_results"], 0)
+
+
+class InferExperienceLevelTest(TestCase):
+    def test_intern(self):
+        self.assertEqual(
+            infer_experience_level("Marketing Intern"),
+            JobOpening.ExperienceLevel.INTERN,
+        )
+
+    def test_junior(self):
+        self.assertEqual(
+            infer_experience_level("Python Developer", "Entry level"),
+            JobOpening.ExperienceLevel.JUNIOR,
+        )
+
+    def test_lead(self):
+        self.assertEqual(
+            infer_experience_level("Lead Engineer"),
+            JobOpening.ExperienceLevel.LEAD,
+        )
+
+    def test_senior(self):
+        self.assertEqual(
+            infer_experience_level("Senior QA Engineer", "5+ years"),
+            JobOpening.ExperienceLevel.SENIOR,
+        )
+
+    def test_mid(self):
+        self.assertEqual(
+            infer_experience_level("Accountant", "2-5 years experience"),
+            JobOpening.ExperienceLevel.MID,
+        )
+
+    def test_senior_beats_mid(self):
+        self.assertEqual(
+            infer_experience_level("Senior Engineer", "3+ years"),
+            JobOpening.ExperienceLevel.SENIOR,
+        )
+
+    def test_senior_range(self):
+        self.assertEqual(
+            infer_experience_level("Engineer", "5-7 years experience"),
+            JobOpening.ExperienceLevel.SENIOR,
+        )
+
+    def test_unknown(self):
+        self.assertEqual(
+            infer_experience_level("Support Officer"),
+            JobOpening.ExperienceLevel.UNKNOWN,
+        )
+
+
+class ImportCompaniesCsvTest(TestCase):
+    def test_import_dedup_and_counts(self):
+        Company.objects.create(
+            name="Existing Co",
+            company_name="Old Name",
+            website="https://old.com",
+        )
+
+        csv_text = (
+            "sn,company_name,website,Status\n"
+            "1,Existing Co,https://a.com,CANDIDATE\n"
+            "2,existing co,https://b.com,CANDIDATE\n"
+            "3,New Co,https://c.com,CANDIDATE\n"
+            "4,New Co,https://d.com,CANDIDATE\n"
+            "5,,https://e.com,CANDIDATE\n"
+        )
+
+        result = import_companies_from_csv(io.StringIO(csv_text))
+
+        self.assertEqual(result.created, 1)
+        self.assertEqual(result.updated, 1)
+        self.assertEqual(result.skipped_duplicate, 2)
+        self.assertEqual(result.skipped_no_name, 1)
+        self.assertIn("New Co", result.skipped_names)
+        self.assertIn("existing co", result.skipped_names)
+
+        self.assertEqual(Company.objects.filter(name__iexact="Existing Co").count(), 1)
+        existing = Company.objects.get(name="Existing Co")
+        self.assertEqual(existing.website, "https://a.com")
+        self.assertEqual(existing.company_name, "Existing Co")
+
+        self.assertEqual(Company.objects.filter(name="New Co").count(), 1)
+
+    def test_import_empty_file(self):
+        result = import_companies_from_csv(io.StringIO(""))
+        self.assertEqual(result.created, 0)
+        self.assertEqual(result.updated, 0)
 
 
 class IsJobLinkTest(TestCase):
@@ -196,3 +496,145 @@ class JobKeywordTest(TestCase):
         """'care' alone should NOT match (was causing product category false positives)."""
         self.assertIsNone(JOB_KEYWORD_RE.search("care"))
         self.assertIsNone(JOB_KEYWORD_RE.search("Men's Care"))
+
+
+class RobotsAllowTest(TestCase):
+    def setUp(self):
+        reset_robots_cache()
+
+    @staticmethod
+    def _parser(text):
+        parser = RobotFileParser()
+        parser.parse(text.splitlines())
+        return parser
+
+    @patch("apps.openings.services.scraper.get_robots_parser")
+    def test_disallowed_path_blocked(self, mock_get):
+        mock_get.return_value = self._parser(
+            "User-agent: *\nDisallow: /careers"
+        )
+        self.assertFalse(robots_allow("https://example.com/careers"))
+        self.assertTrue(robots_allow("https://example.com/about"))
+
+    @patch("apps.openings.services.scraper.get_robots_parser")
+    def test_no_parser_allows(self, mock_get):
+        mock_get.return_value = None
+        self.assertTrue(robots_allow("https://example.com/careers"))
+
+    @patch("apps.openings.services.scraper.get_robots_parser")
+    def test_deny_all_blocks(self, mock_get):
+        mock_get.return_value = self._parser(
+            "User-agent: *\nDisallow: /"
+        )
+        self.assertFalse(robots_allow("https://example.com/anything"))
+
+
+class ParseRetryAfterTest(TestCase):
+    def test_seconds(self):
+        self.assertEqual(parse_retry_after("300"), 300)
+
+    def test_http_date(self):
+        self.assertGreater(
+            parse_retry_after("Wed, 21 Oct 2037 07:28:00 GMT"), 0
+        )
+
+    def test_invalid_or_missing(self):
+        self.assertEqual(parse_retry_after("garbage"), 3600)
+        self.assertEqual(parse_retry_after(""), 3600)
+        self.assertEqual(parse_retry_after(None), 3600)
+
+
+class FastFindCareerPageTest(TestCase):
+    def test_probe_uses_three_workers(self):
+        with patch("apps.openings.services.scraper.ThreadPoolExecutor") as mock_exec:
+            mock_exec.return_value.__enter__.return_value = MagicMock()
+            with patch(
+                "apps.openings.services.scraper.http_requests.get"
+            ) as mock_get:
+                mock_get.return_value = SimpleNamespace(
+                    status_code=200,
+                    ok=True,
+                    url="https://example.com/",
+                    text="",
+                    headers={},
+                )
+                fast_find_career_page("https://example.com")
+        self.assertEqual(mock_exec.call_args.kwargs["max_workers"], 3)
+
+
+class ScrapeRunEthicsTest(TestCase):
+    def setUp(self):
+        reset_robots_cache()
+
+    @staticmethod
+    def _pw(mock_sync):
+        mock_sync.return_value.__enter__.return_value = MagicMock()
+
+    @staticmethod
+    def _http(status_code=200, text=""):
+        return SimpleNamespace(
+            status_code=status_code,
+            ok=200 <= status_code < 400,
+            url="https://example.com/",
+            text=text,
+            headers={},
+        )
+
+    @patch("apps.openings.services.scraper.sync_playwright")
+    @patch("apps.openings.services.scraper.resolve_target_url")
+    @patch("apps.openings.services.scraper.close_old_connections")
+    @patch("apps.openings.services.scraper.http_requests.get")
+    def test_429_marks_company_rate_limited(
+        self, mock_get, mock_close, mock_resolve, mock_pw
+    ):
+        self._pw(mock_pw)
+        mock_get.return_value = self._http()
+        mock_resolve.side_effect = RateLimitedError(
+            url="https://rateco.com/careers", retry_after=300
+        )
+        company = Company.objects.create(
+            name="RateCo", website="https://rateco.com"
+        )
+        run = run_scrape_for_active_companies(limit=1)
+        company.refresh_from_db()
+        self.assertIsNotNone(company.rate_limited_until)
+        self.assertIn("Rate limited", company.last_error)
+        self.assertEqual(run.status, ScrapeRun.Status.SUCCESS)
+
+    @patch("apps.openings.services.scraper.sync_playwright")
+    @patch("apps.openings.services.scraper.fast_find_career_page")
+    @patch("apps.openings.services.scraper.close_old_connections")
+    @patch("apps.openings.services.scraper.http_requests.get")
+    def test_career_url_cached_and_reused(
+        self, mock_get, mock_close, mock_fast, mock_pw
+    ):
+        self._pw(mock_pw)
+        mock_get.return_value = self._http(
+            text="careers job openings at example"
+        )
+        mock_fast.return_value = "https://example.com/careers"
+        company = Company.objects.create(
+            name="CacheCo", website="https://example.com"
+        )
+        run_scrape_for_active_companies(limit=1)
+        company.refresh_from_db()
+        self.assertEqual(company.career_url, "https://example.com/careers")
+
+        run_scrape_for_active_companies(limit=1)
+        mock_fast.assert_called_once_with("https://example.com")
+
+    @patch("apps.openings.services.scraper.sync_playwright")
+    @patch("apps.openings.services.scraper.close_old_connections")
+    @patch("apps.openings.services.scraper.http_requests.get")
+    def test_rate_limited_company_skipped(self, mock_get, mock_close, mock_pw):
+        self._pw(mock_pw)
+        mock_get.return_value = self._http()
+        company = Company.objects.create(
+            name="SkipCo",
+            website="https://skipco.com",
+            rate_limited_until=timezone.now() + timedelta(hours=2),
+        )
+        run = run_scrape_for_active_companies(limit=1)
+        company.refresh_from_db()
+        self.assertEqual(run.companies_processed, 0)
+        self.assertEqual(company.last_error, "")

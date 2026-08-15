@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Import companies from CSV | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block content %}
+  <h1>Import companies from CSV</h1>
+
+  <p style="background: var(--message-warning-bg, #fff3cd); padding: 10px 14px; border-radius: 6px;">
+    Expected columns: <code>sn, company_name, website</code> (or <code>name</code>).
+    Duplicate names inside the file are skipped (first row wins); names already in the
+    database are updated, not re-created. Rows without a name are skipped.
+  </p>
+
+  <form method="post" enctype="multipart/form-data" action="{% url 'admin:openings_company_import_csv' %}">
+    {% csrf_token %}
+    <div>
+      <input type="file" name="csv_file" accept=".csv" required>
+    </div>
+    <div class="submit-row">
+      <input type="submit" value="Upload and import" class="default">
+    </div>
+  </form>
+
+  <p><a href="{% url 'admin:openings_company_changelist' %}">&larr; Back to companies</a></p>
+{% endblock %}

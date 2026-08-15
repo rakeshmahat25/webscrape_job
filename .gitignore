@@ -56,6 +56,8 @@ coverage.xml
 cover/
 .envp
 staticfiles
+text.txt
+/text.txt
 
 # Translations
 *.mo

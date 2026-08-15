@@ -1,0 +1,61 @@
+{% extends "openings/base.html" %}
+{% block title %}Import Companies — Job Monitor{% endblock %}
+
+{% block content %}
+  <h1 style="font-size:20px; margin:0 0 16px;">Import Companies</h1>
+
+  <div class="card" style="padding:18px;">
+    <h2 style="padding:0 0 14px;">Upload a CSV file</h2>
+    <p class="muted" style="margin:0 0 14px;">
+      Expected columns: <code>sn, company_name, website</code> (or <code>name</code>).
+      Other columns (e.g. <code>Status</code>) are ignored.
+    </p>
+    <ul class="muted" style="margin:0 0 18px; padding-left:18px; font-size:13px; line-height:1.7;">
+      <li>Duplicate names inside the file are skipped — the first row wins.</li>
+      <li>Names already in the database are updated with the new <code>company_name</code>/<code>website</code>, never re-created.</li>
+      <li>Rows without a name are skipped.</li>
+    </ul>
+
+    {% for message in messages %}
+      <div class="error" style="margin-bottom:14px;">{{ message }}</div>
+    {% endfor %}
+
+    <form method="post" enctype="multipart/form-data" action="{% url 'import-companies' %}">
+      {% csrf_token %}
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <input type="file" name="csv_file" accept=".csv" required
+               style="flex:1; min-width:240px; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px;">
+        <button type="submit">Upload and import</button>
+      </div>
+    </form>
+  </div>
+
+  {% if result %}
+  <div class="card" style="padding:18px;">
+    <h2 style="padding:0 0 14px;">Import result</h2>
+    <div class="stats" style="margin:0;">
+      <div class="stat">
+        <div class="value">{{ result.created }}</div>
+        <div class="label">Created</div>
+      </div>
+      <div class="stat">
+        <div class="value">{{ result.updated }}</div>
+        <div class="label">Updated</div>
+      </div>
+      <div class="stat">
+        <div class="value">{{ result.skipped_duplicate }}</div>
+        <div class="label">Skipped (duplicate)</div>
+      </div>
+      <div class="stat">
+        <div class="value">{{ result.skipped_no_name }}</div>
+        <div class="label">Skipped (no name)</div>
+      </div>
+    </div>
+    {% if result.skipped_names %}
+      <p class="muted" style="font-size:13px;">
+        Skipped duplicate rows: {{ result.skipped_names|join:", " }}
+      </p>
+    {% endif %}
+  </div>
+  {% endif %}
+{% endblock %}

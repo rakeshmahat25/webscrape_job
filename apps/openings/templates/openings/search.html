@@ -1,0 +1,92 @@
+{% extends "openings/base.html" %}
+{% load pagination_tags %}
+{% block title %}Search Openings — Job Monitor{% endblock %}
+
+{% block content %}
+  <h1 style="font-size:20px; margin:0 0 16px;">Search Openings</h1>
+
+  <div class="card" style="padding:18px;">
+    <form method="get" action="{% url 'job-search' %}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <input type="text" name="q" value="{{ query }}" placeholder="Job title, requirements, company..." aria-label="Search keywords"
+             style="flex:1; min-width:260px; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px;">
+      <select name="level" aria-label="Experience level"
+              style="padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px;">
+        <option value="">Any level</option>
+        {% for value, label in levels %}
+          <option value="{{ value }}" {% if level == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Search</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Results <span class="count">{{ total_results }}</span></h2>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Title</th>
+          <th>Level</th>
+          <th>Location</th>
+          <th>Salary</th>
+          <th>Requirements</th>
+          <th>URL</th>
+          <th>First seen</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td><a href="{% url 'company-detail' job.company_id %}">{{ job.company.company_name }}</a></td>
+          <td><a href="{% url 'opening-detail' job.id %}">{{ job.title }}</a></td>
+          <td>
+            {% if job.experience_level != 'unknown' %}
+              <span class="badge success">{{ job.get_experience_level_display }}</span>
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
+          <td>{{ job.location|default:"—" }}</td>
+          <td>{{ job.salary|default:"—" }}</td>
+          <td class="req" style="max-width:380px; font-size:12px; line-height:1.45;">
+            {% if job.requirements %}
+              <details><summary>{{ job.requirements|truncatechars:60 }}</summary><div class="req-body">{{ job.requirements|linebreaksbr }}</div></details>
+            {% elif job.description %}
+              <details><summary>{{ job.description|truncatechars:60 }}</summary><div class="req-body">{{ job.description|linebreaksbr }}</div></details>
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
+          <td class="ellipsis"><a href="{{ job.url }}" target="_blank" rel="noopener">{{ job.url }}</a></td>
+          <td class="muted">{{ job.first_seen_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="empty">No openings match your search.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% if jobs.has_other_pages %}
+    <div class="pagination">
+      <span class="muted">Showing {{ jobs.start_index }}–{{ jobs.end_index }} of {{ jobs.paginator.count }}</span>
+      <div class="page-links">
+        {% if jobs.has_previous %}
+          <a class="step" href="?{% pagination_query request 'page' jobs.previous_page_number %}">«</a>
+        {% endif %}
+        {% for num in jobs.paginator.page_range %}
+          {% if jobs.number == num %}
+            <span class="current">{{ num }}</span>
+          {% elif num >= jobs.number|add:-3 and num <= jobs.number|add:3 %}
+            <a href="?{% pagination_query request 'page' num %}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if jobs.has_next %}
+          <a class="step" href="?{% pagination_query request 'page' jobs.next_page_number %}">»</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+{% endblock %}

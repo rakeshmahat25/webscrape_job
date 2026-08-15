@@ -1,10 +1,8 @@
 # apps/openings/management/commands/import_companies_csv.py
 
-import csv
-
 from django.core.management.base import BaseCommand
 
-from apps.openings.models import Company
+from apps.openings.services.imports import import_companies_from_csv
 
 
 class Command(BaseCommand):
@@ -20,53 +18,26 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         csv_file = options["csv_file"]
 
-        created_count = 0
-        updated_count = 0
-        skipped_count = 0
-
         with open(csv_file, newline="", encoding="utf-8-sig") as f:
-            reader = csv.DictReader(f)
-
-            fieldnames = reader.fieldnames
-            name_header = "company_name" if "company_name" in fieldnames else "name" if "name" in fieldnames else fieldnames[0]
-
-            for row in reader:
-                name = (
-                    row.get(name_header)
-                    or ""
-                ).strip()
-
-                if not name:
-                    skipped_count += 1
-                    continue
-
-                company_name = (
-                    row.get("company_name")
-                    or ""
-                ).strip()
-
-                website = (
-                    row.get("website")
-                    or ""
-                ).strip()
-
-                company, created = Company.objects.update_or_create(
-                    name=name,
-                    defaults={
-                        "company_name": company_name,
-                        "website": website,
-                    },
-                )
-
-                if created:
-                    created_count += 1
-                else:
-                    updated_count += 1
+            result = import_companies_from_csv(f)
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Created: {created_count}, "
-                f"Updated: {updated_count}, "
-                f"Skipped: {skipped_count}"
+                f"Created: {result.created}, "
+                f"Updated: {result.updated}, "
+                f"Skipped: {result.skipped_no_name + result.skipped_duplicate}"
             )
         )
+
+        if result.skipped_duplicate:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Duplicate rows skipped: {', '.join(result.skipped_names[:20])}"
+                )
+            )
+            if len(result.skipped_names) > 20:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"... and {len(result.skipped_names) - 20} more"
+                    )
+                )

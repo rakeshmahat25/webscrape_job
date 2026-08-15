@@ -1,11 +1,15 @@
 # apps/openings/services/scraper.py
 
+import datetime as dt
 import random
 import os
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import timedelta
+from email.utils import parsedate_to_datetime
 from urllib.parse import urlparse
+from urllib.robotparser import RobotFileParser
 
 import requests as http_requests
 
@@ -19,12 +23,16 @@ from playwright.sync_api import sync_playwright
 from apps.openings.models import Company, JobOpening, ScrapeRun
 
 
+CONTACT_EMAIL = "jobmonitor-contact@example.com"
+
 USER_AGENT = (
     "Mozilla/5.0 (compatible; DjangoJobMonitorBot/1.0; "
-    "+https://example.com/contact)"
+    f"+mailto:{CONTACT_EMAIL})"
 )
 
 HTTP_TIMEOUT = 10
+
+ROBOTS_TIMEOUT = 5
 
 PAGE_TIMEOUT = 15000
 
@@ -214,6 +222,94 @@ CAREER_SECTION_TITLES = {
 }
 
 
+_robots_cache = {}
+
+
+def reset_robots_cache():
+    _robots_cache.clear()
+
+
+def get_robots_parser(base_url: str):
+    """Fetch and parse robots.txt for a site, once per scrape run.
+
+    Returns a RobotFileParser, or None when no restriction applies
+    (unreachable robots.txt, 404, or rate-limited responses). 401/403
+    responses are treated as disallow-all.
+    """
+    if not base_url:
+        return None
+    try:
+        parsed = urlparse(base_url)
+        base = f"{parsed.scheme}://{parsed.netloc}"
+        robots_url = f"{base}/robots.txt"
+    except Exception:
+        return None
+
+    key = base.lower()
+    if key in _robots_cache:
+        return _robots_cache[key]
+
+    parser = None
+    try:
+        resp = http_requests.get(
+            robots_url,
+            timeout=ROBOTS_TIMEOUT,
+            headers={"User-Agent": USER_AGENT},
+        )
+        if resp.status_code == 200:
+            parser = RobotFileParser()
+            parser.parse(resp.text.splitlines())
+        elif resp.status_code in (401, 403):
+            parser = RobotFileParser()
+            parser.parse(["User-agent: *", "Disallow: /"])
+    except Exception:
+        parser = None
+
+    _robots_cache[key] = parser
+    return parser
+
+
+def robots_allow(url: str) -> bool:
+    """True when robots.txt allows fetching this URL (or can't be fetched)."""
+    if not url:
+        return False
+    try:
+        parsed = urlparse(url)
+        base = f"{parsed.scheme}://{parsed.netloc}"
+    except Exception:
+        return True
+    parser = get_robots_parser(base)
+    if parser is None:
+        return True
+    return parser.can_fetch(USER_AGENT, url)
+
+
+class RateLimitedError(Exception):
+    def __init__(self, url="", retry_after=None):
+        self.url = url
+        self.retry_after = retry_after
+        super().__init__(f"Rate limited (429): {url}")
+
+
+def parse_retry_after(value, default_seconds=3600):
+    """Parse a Retry-After header (seconds or HTTP-date) into seconds."""
+    if not value:
+        return default_seconds
+    value = str(value).strip()
+    if value.isdigit():
+        return int(value)
+    try:
+        parsed = parsedate_to_datetime(value)
+        if parsed:
+            seconds = (
+                parsed - dt.datetime.now(dt.timezone.utc)
+            ).total_seconds()
+            return max(int(seconds), 0) or default_seconds
+    except Exception:
+        pass
+    return default_seconds
+
+
 def safe_page_goto(page, url, retries=2):
     for attempt in range(retries):
         try:
@@ -236,6 +332,70 @@ def clean_title(title: str) -> str:
     title = re.sub(r"\s+", " ", title)
     title = title.strip()
     return title[:500]
+
+
+def infer_experience_level(title: str, requirements: str = "", description: str = "") -> str:
+    """Infer the experience level of an opening from its scraped text.
+
+    Keyword priority: intern -> junior -> lead -> senior -> mid -> unknown.
+    Experience ranges (e.g. "2-5 years") are handled so "5 years" inside a
+    range does not accidentally classify as senior.
+    """
+    text = " ".join(filter(None, [title, requirements, description])).lower()
+
+    intern_patterns = [
+        r"\bintern\b",
+        r"\binternship",
+        r"\btrainee",
+    ]
+    junior_patterns = [
+        r"\bjunior\b",
+        r"entry\s*level",
+        r"\bfresher",
+        r"\bgraduate\b",
+        r"0\s*[-–to]+\s*1\s*years?",
+        r"[01]\s*[-–to]+\s*\d+\s*years?",
+        r"\b1\s*years?",
+        r"less than 1 year",
+        r"early career",
+    ]
+    lead_patterns = [
+        r"\blead\b",
+        r"head of",
+        r"\bdirector\b",
+    ]
+    senior_word_patterns = [
+        r"\bsenior\b",
+        r"\bsr\.?\b",
+        r"\bexpert\b",
+    ]
+    senior_range_patterns = [
+        r"5\s*\+",
+        r"6\s*\+",
+        r"7\s*\+",
+        r"5\s*[-–]+\s*\d+\s*years?",
+        r"(?:more than|at least|over|above)\s*5\s*years?",
+    ]
+    mid_patterns = [
+        r"\bmid\b",
+        r"mid[- ]level",
+        r"[234]\s*\+?\s*years?",
+        r"[234]\s*[-–to]+\s*\d+\s*years?",
+    ]
+
+    if any(re.search(p, text) for p in intern_patterns):
+        return JobOpening.ExperienceLevel.INTERN
+    if any(re.search(p, text) for p in junior_patterns):
+        return JobOpening.ExperienceLevel.JUNIOR
+    if any(re.search(p, text) for p in lead_patterns):
+        return JobOpening.ExperienceLevel.LEAD
+    if any(re.search(p, text) for p in senior_word_patterns):
+        return JobOpening.ExperienceLevel.SENIOR
+    if any(re.search(p, text) for p in senior_range_patterns):
+        return JobOpening.ExperienceLevel.SENIOR
+    if any(re.search(p, text) for p in mid_patterns):
+        return JobOpening.ExperienceLevel.MID
+    return JobOpening.ExperienceLevel.UNKNOWN
 
 
 def normalize_url(url: str) -> str:
@@ -364,26 +524,34 @@ def fast_find_career_page(website: str):
 
     def probe(path):
         url = f"{base}{path}"
+        if not robots_allow(url):
+            return None
         try:
+            time.sleep(random.uniform(0.5, 1.5))
             resp = http_requests.get(
                 url,
                 timeout=HTTP_TIMEOUT,
                 headers={"User-Agent": USER_AGENT},
                 allow_redirects=True,
             )
+            if resp.status_code == 429:
+                raise RateLimitedError(
+                    url=url,
+                    retry_after=parse_retry_after(
+                        resp.headers.get("Retry-After")
+                    ),
+                )
             if resp.ok and resp.status_code < 400:
-                # Don't follow giant redirects (e.g. SPA index.html)
-                if resp.url.rstrip("/") != url.rstrip("/"):
-                    # Redirect to a different path — might still be useful
-                    pass
                 text = resp.text.lower()
                 if any(kw in text for kw in job_keywords):
                     return url
+        except RateLimitedError:
+            raise
         except Exception:
             pass
         return None
 
-    with ThreadPoolExecutor(max_workers=8) as pool:
+    with ThreadPoolExecutor(max_workers=3) as pool:
         futures = {pool.submit(probe, p): p for p in CAREER_PATHS}
         try:
             for future in as_completed(futures, timeout=30):
@@ -399,6 +567,52 @@ def fast_find_career_page(website: str):
                 f.cancel()
 
     return None
+
+
+def resolve_target_url(company):
+    """Pick the career listing URL for a company.
+
+    Prefers the cached Company.career_url when a single validation
+    request still returns 200 with job keywords; otherwise probes the
+    known career paths again.
+    """
+    if company.career_url:
+        try:
+            parsed = urlparse(company.career_url)
+            if parsed.scheme not in ("http", "https"):
+                company.career_url = ""
+                company.save(update_fields=["career_url"])
+                return fast_find_career_page(company.website)
+
+            resp = http_requests.get(
+                company.career_url,
+                timeout=HTTP_TIMEOUT,
+                headers={"User-Agent": USER_AGENT},
+                allow_redirects=True,
+            )
+            if resp.status_code == 429:
+                raise RateLimitedError(
+                    url=company.career_url,
+                    retry_after=parse_retry_after(
+                        resp.headers.get("Retry-After")
+                    ),
+                )
+            job_keywords = (
+                "career", "job", "vacancy", "vacancies", "opening",
+                "apply", "hiring", "recruitment", "join us",
+            )
+            if resp.ok and resp.status_code < 400:
+                if any(kw in resp.text.lower() for kw in job_keywords):
+                    return company.career_url
+        except RateLimitedError:
+            raise
+        except Exception:
+            pass
+
+        company.career_url = ""
+        company.save(update_fields=["career_url"])
+
+    return fast_find_career_page(company.website)
 
 
 def find_job_listing_page(page, website: str):
@@ -676,11 +890,21 @@ def parse_job_blocks(text: str) -> dict:
 
 def extract_job_links(page, source_url: str):
     try:
-        page.goto(
+        if not robots_allow(source_url):
+            return []
+
+        response = page.goto(
             source_url,
             timeout=PAGE_TIMEOUT,
             wait_until="domcontentloaded",
         )
+        if response and response.status == 429:
+            raise RateLimitedError(
+                url=source_url,
+                retry_after=parse_retry_after(
+                    response.headers.get("Retry-After")
+                ),
+            )
         page.wait_for_timeout(1500)
 
         for _ in range(2):
@@ -699,6 +923,8 @@ def extract_job_links(page, source_url: str):
             """
         )
 
+    except RateLimitedError:
+        raise
     except Exception:
         return []
 
@@ -897,11 +1123,21 @@ def extract_job_details(page, job_url: str, current_title: str = ""):
         return details
 
     try:
-        page.goto(
+        if not robots_allow(job_url):
+            return details
+
+        response = page.goto(
             job_url,
             timeout=PAGE_TIMEOUT,
             wait_until="domcontentloaded",
         )
+        if response and response.status == 429:
+            raise RateLimitedError(
+                url=job_url,
+                retry_after=parse_retry_after(
+                    response.headers.get("Retry-After")
+                ),
+            )
         page.wait_for_timeout(1500)
 
         for _ in range(3):
@@ -944,6 +1180,8 @@ def extract_job_details(page, job_url: str, current_title: str = ""):
             """
         )
 
+    except RateLimitedError:
+        raise
     except Exception:
         return details
 
@@ -998,6 +1236,8 @@ def run_scrape_for_active_companies(limit=None):
         status=ScrapeRun.Status.RUNNING
     )
 
+    reset_robots_cache()
+
     companies_qs = Company.objects.filter(
         is_active=True
     ).order_by("name")
@@ -1031,23 +1271,33 @@ def run_scrape_for_active_companies(limit=None):
             for company in companies:
                 close_old_connections()
 
+                if (
+                    company.rate_limited_until
+                    and company.rate_limited_until > timezone.now()
+                ):
+                    continue
+
                 processed += 1
 
                 try:
-                    # Fast path: probe career paths with plain HTTP
-                    # (no browser, ~10-50x faster than Playwright probing).
-                    target_url = fast_find_career_page(company.website)
+                    # Use the cached career page when it still validates,
+                    # otherwise probe career paths with plain HTTP.
+                    target_url = resolve_target_url(company)
 
                     if not target_url:
                         company.last_scraped_at = timezone.now()
                         company.last_error = "No career page found"
+                        company.career_url = ""
                         company.save(
                             update_fields=[
                                 "last_scraped_at",
                                 "last_error",
+                                "career_url",
                             ]
                         )
                         continue
+
+                    company.career_url = target_url
 
                     links = extract_job_links(page, target_url)
 
@@ -1097,6 +1347,11 @@ def run_scrape_for_active_companies(limit=None):
                             job.location = item.get("location", "")
                             job.salary = item.get("salary", "")
                             job.deadline = item.get("deadline", "")
+                            job.experience_level = infer_experience_level(
+                                job.title,
+                                job.requirements,
+                                job.description,
+                            )
                             close_old_connections()
                             job.save()
 
@@ -1117,6 +1372,11 @@ def run_scrape_for_active_companies(limit=None):
                         job.location = details["location"]
                         job.salary = details["salary"]
                         job.deadline = details.get("deadline") or ""
+                        job.experience_level = infer_experience_level(
+                            job.title,
+                            job.requirements,
+                            job.description,
+                        )
 
                         close_old_connections()
                         job.save()
@@ -1134,12 +1394,34 @@ def run_scrape_for_active_companies(limit=None):
 
                     company.last_scraped_at = timezone.now()
                     company.last_error = ""
+                    company.rate_limited_until = None
                     company.save(
                         update_fields=[
                             "last_scraped_at",
                             "last_error",
+                            "career_url",
+                            "rate_limited_until",
                         ]
                     )
+
+                except RateLimitedError as exc:
+                    retry_at = timezone.now() + timedelta(
+                        seconds=exc.retry_after or 3600
+                    )
+                    company.last_scraped_at = timezone.now()
+                    company.last_error = (
+                        f"Rate limited (429), retry after "
+                        f"{retry_at:%Y-%m-%d %H:%M}"
+                    )
+                    company.rate_limited_until = retry_at
+                    company.save(
+                        update_fields=[
+                            "last_scraped_at",
+                            "last_error",
+                            "rate_limited_until",
+                        ]
+                    )
+                    errors.append(f"{company.name}: rate limited")
 
                 except Exception as exc:
                     company.last_scraped_at = timezone.now()

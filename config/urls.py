@@ -1,12 +1,23 @@
 # config/urls.py
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 from apps.openings import views as openings_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("accounts/", include("django.contrib.auth.urls")),
+    path(
+        "search/",
+        openings_views.job_search,
+        name="job-search",
+    ),
+    path(
+        "import-companies/",
+        openings_views.import_companies,
+        name="import-companies",
+    ),
     path(
         "",
         openings_views.dashboard,

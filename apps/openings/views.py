@@ -1,14 +1,17 @@
 # apps/openings/views.py
 
 from datetime import timedelta
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 
 from .models import Company, JobOpening, ScrapeRun
+from .services.imports import import_companies_from_csv
 from .tasks import scrape_openings  # Import the Celery task
 
 COMPANIES_PER_PAGE = 25
@@ -42,6 +45,7 @@ def _companies_qs():
     ).order_by("-openings_count", "name")
 
 
+@login_required
 def dashboard(request):
     """
     Web page showing the scraped data.
@@ -72,6 +76,7 @@ def dashboard(request):
     return render(request, "openings/dashboard.html", context)
 
 
+@login_required
 def company_list(request):
     """
     List all companies (secondary page), paginated.
@@ -90,6 +95,7 @@ def company_list(request):
     return render(request, "openings/companies.html", context)
 
 
+@login_required
 def company_detail(request, company_id):
     """
     Company profile: full info plus all active openings scraped
@@ -123,6 +129,7 @@ def company_detail(request, company_id):
     return render(request, "openings/company_detail.html", context)
 
 
+@login_required
 def opening_detail(request, job_id):
     """
     Single job page: description, requirements, location, salary.
@@ -139,7 +146,7 @@ def opening_detail(request, job_id):
     return render(request, "openings/opening_detail.html", context)
 
 
-@csrf_exempt
+@login_required
 def run_scrape_now(request):
     """
     POST-only: Trigger a scrape in a background thread.
@@ -159,6 +166,7 @@ def run_scrape_now(request):
     return JsonResponse({"triggered": True, "mode": "threaded"})
 
 
+@login_required
 def latest_openings(request):
     """
     Simple API endpoint.
@@ -204,3 +212,72 @@ def latest_openings(request):
             "results": results,
         }
     )
+
+
+@login_required
+def job_search(request):
+    """
+    Search active openings by keyword (title, requirements, description,
+    company) and filter by experience level.
+    """
+    query = request.GET.get("q", "").strip()
+    level = request.GET.get("level", "").strip()
+
+    jobs_qs = _active_openings_qs()
+
+    if query:
+        jobs_qs = jobs_qs.filter(
+            models.Q(title__icontains=query)
+            | models.Q(requirements__icontains=query)
+            | models.Q(description__icontains=query)
+            | models.Q(company__name__icontains=query)
+            | models.Q(company__company_name__icontains=query)
+        )
+
+    if level:
+        jobs_qs = jobs_qs.filter(experience_level=level)
+
+    paginator = Paginator(jobs_qs, OPENINGS_PER_PAGE)
+    jobs = _get_page(paginator, request.GET.get("page"))
+
+    context = {
+        "active_nav": "search",
+        "jobs": jobs,
+        "query": query,
+        "level": level,
+        "levels": JobOpening.ExperienceLevel.choices,
+        "total_results": paginator.count,
+    }
+
+    return render(request, "openings/search.html", context)
+
+
+@login_required
+def import_companies(request):
+    """
+    Staff-only page: upload a CSV of companies to add/update them.
+    Duplicate names are skipped/updated, never re-created.
+    """
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    result = None
+
+    if request.method == "POST":
+        csv_file = request.FILES.get("csv_file")
+        if not csv_file:
+            messages.error(request, "Please choose a CSV file to upload.")
+        elif not csv_file.name.lower().endswith(".csv"):
+            messages.error(request, "Only .csv files are allowed.")
+        else:
+            try:
+                result = import_companies_from_csv(csv_file)
+            except Exception as exc:
+                messages.error(request, f"Import failed: {exc}")
+
+    context = {
+        "active_nav": "companies",
+        "result": result,
+    }
+
+    return render(request, "openings/import_companies.html", context)

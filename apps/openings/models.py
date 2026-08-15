@@ -21,6 +21,10 @@ class Company(models.Model):
 
     last_error = models.TextField(blank=True)
 
+    career_url = models.CharField(max_length=1000, blank=True, default="")
+
+    rate_limited_until = models.DateTimeField(null=True, blank=True)
+
     notes = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -45,6 +49,14 @@ class JobOpening(models.Model):
     """
     Possible job opening scraped from a company website.
     """
+
+    class ExperienceLevel(models.TextChoices):
+        INTERN = "intern", "Intern"
+        JUNIOR = "junior", "Junior"
+        MID = "mid", "Mid-Level"
+        SENIOR = "senior", "Senior"
+        LEAD = "lead", "Lead / Manager"
+        UNKNOWN = "unknown", "Unknown"
 
     company = models.ForeignKey(
         Company,
@@ -84,6 +96,13 @@ class JobOpening(models.Model):
     education = models.CharField(max_length=500, blank=True, default="")
 
     deadline = models.CharField(max_length=50, blank=True, default="")
+
+    experience_level = models.CharField(
+        max_length=20,
+        choices=ExperienceLevel.choices,
+        default=ExperienceLevel.UNKNOWN,
+        db_index=True,
+    )
 
     class Meta:
         verbose_name = "Job Opening"

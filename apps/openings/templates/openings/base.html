@@ -30,7 +30,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 16px 24px;
+      padding: 12px 24px;
       border-bottom: 1px solid var(--border);
       background: var(--card);
       position: sticky;
@@ -40,6 +40,14 @@
     header .brand { display: flex; align-items: baseline; gap: 12px; }
     header h1 { font-size: 18px; margin: 0; }
     header .sub { color: var(--muted); font-size: 13px; }
+    header .clock {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+    }
     nav { display: flex; gap: 4px; align-items: center; }
     nav a {
       color: var(--muted);
@@ -48,9 +56,90 @@
       border-radius: 8px;
       font-size: 14px;
       font-weight: 600;
+      white-space: nowrap;
     }
     nav a:hover { color: var(--text); background: var(--bg); }
     nav a.active { color: var(--accent); background: var(--bg); }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .search-form { display: flex; align-items: center; }
+    .search-form input {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      width: 170px;
+    }
+    .search-form input:focus { outline: none; border-color: var(--accent); }
+    .user-menu { position: relative; }
+    .user-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 4px 12px 4px 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .user-btn:hover { border-color: var(--accent); }
+    .user-btn .avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--secondary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .dropdown {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      min-width: 200px;
+      padding: 6px;
+      display: none;
+      z-index: 30;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    .dropdown.open { display: block; }
+    .dropdown-head {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 6px;
+    }
+    .dropdown-head .dropdown-name { font-size: 14px; font-weight: 700; }
+    .dropdown-head .muted { font-size: 12px; }
+    .dropdown-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .dropdown-item:hover { background: var(--bg); color: var(--accent); }
+    .dropdown-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 6px 4px;
+    }
     main { max-width: 1100px; margin: 24px auto; padding: 0 24px; }
     .stats {
       display: grid;
@@ -150,14 +239,41 @@
   <header>
     <div class="brand">
       <h1><a href="{% url 'dashboard' %}" style="color:var(--text); text-decoration:none;">Job Monitor</a></h1>
-      
     </div>
     <nav>
       <a href="{% url 'dashboard' %}" {% if active_nav == 'dashboard' %}class="active"{% endif %}>Dashboard</a>
       <a href="{% url 'company-list' %}" {% if active_nav == 'companies' %}class="active"{% endif %}>Companies</a>
-      <span class="sub" id="run-status">{% now "Y-m-d H:i" %}</span>
-      <button id="scrape-btn" type="button">Run scrape now</button>
+      <a href="{% url 'job-search' %}" {% if active_nav == 'search' %}class="active"{% endif %}>Search</a>
     </nav>
+    <div class="header-actions">
+      <form class="search-form" action="{% url 'job-search' %}" method="get">
+        <input type="text" name="q" placeholder="Search jobs..." aria-label="Search jobs">
+      </form>
+      <span class="sub clock" id="run-status" title="Current time (Asia/Kathmandu)"></span>
+      <div class="user-menu">
+        <button type="button" class="user-btn" id="user-btn" aria-haspopup="true" aria-expanded="false">
+          <span class="avatar">{{ user.get_username|slice:":1"|upper }}</span>
+          <span class="user-name">{{ user.get_username }}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown" id="user-dropdown">
+          <div class="dropdown-head">
+            <div class="dropdown-name">{{ user.get_username }}</div>
+            <div class="muted">{{ user.email|default:"No email" }} · {% if user.is_staff %}Staff{% else %}User{% endif %}</div>
+          </div>
+          {% if user.is_staff %}
+          <a class="dropdown-item" href="{% url 'admin:index' %}">Admin site</a>
+          <a class="dropdown-item" href="{% url 'import-companies' %}">Import companies (CSV)</a>
+          {% endif %}
+          <button type="button" class="dropdown-item" id="scrape-btn">Run scrape now</button>
+          <div class="dropdown-divider"></div>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="dropdown-item">Logout</button>
+          </form>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main>
@@ -167,9 +283,52 @@
   <script>
     const btn = document.getElementById('scrape-btn');
     const status = document.getElementById('run-status');
+    let scraping = false;
+
+    function tickClock() {
+      if (scraping || !status) return;
+      try {
+        const s = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Asia/Kathmandu',
+          dateStyle: 'medium',
+          timeStyle: 'medium',
+        }).format(new Date());
+        status.textContent = s;
+      } catch (e) { /* keep existing text */ }
+    }
+    setInterval(tickClock, 1000);
+    tickClock();
+
+    const userBtn = document.getElementById('user-btn');
+    const dropdown = document.getElementById('user-dropdown');
+    if (userBtn && dropdown) {
+      userBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = dropdown.classList.toggle('open');
+        userBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.classList.remove('open');
+          userBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          dropdown.classList.remove('open');
+          userBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
     if (btn && status) {
       btn.addEventListener('click', async () => {
+        if (dropdown) {
+          dropdown.classList.remove('open');
+          userBtn.setAttribute('aria-expanded', 'false');
+        }
         btn.disabled = true;
+        scraping = true;
         status.textContent = 'Scrape started…';
         try {
           const resp = await fetch('{% url "run-scrape" %}', { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} });
@@ -183,6 +342,8 @@
           status.textContent = 'Failed to trigger scrape.';
         } finally {
           btn.disabled = false;
+          scraping = false;
+          setTimeout(tickClock, 4000);
         }
       });
     }
