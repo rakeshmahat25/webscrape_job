@@ -23,7 +23,7 @@ from playwright.sync_api import sync_playwright
 from apps.openings.models import Company, JobOpening, ScrapeRun
 
 
-CONTACT_EMAIL = "jobmonitor-contact@example.com"
+CONTACT_EMAIL = "jobmonitor-contact@jobaxle.com"
 
 USER_AGENT = (
     "Mozilla/5.0 (compatible; DjangoJobMonitorBot/1.0; "
